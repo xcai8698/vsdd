@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """VSDD workflow CLI; Python 3.10+, standard library only."""
-import argparse, csv, json, re, shutil, sys
+import argparse, csv, json, os, re, shutil, sys
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -36,19 +36,66 @@ def root(args): return Path(args.root).resolve()
 def state_path(folder): return folder/"state.json"
 def load_state(folder): return json.loads(state_path(folder).read_text(encoding="utf-8"))
 def save_state(folder,state): state["updated_at"]=now(); state_path(folder).write_text(json.dumps(state,indent=2)+"\n",encoding="utf-8")
+def bundle_root():
+    configured = os.environ.get("VSDD_HOME")
+    if configured:
+        return Path(configured).expanduser().resolve()
+    return Path(__file__).resolve().parent.parent
+
+def copy_tree_merge(src, dst, overwrite=True):
+    """递归同步随包资源，不删除项目自有文件。"""
+    if not src.exists():
+        return 0
+    dst.mkdir(parents=True, exist_ok=True)
+    copied = 0
+    for item in src.iterdir():
+        target = dst / item.name
+        if item.is_dir():
+            copied += copy_tree_merge(item, target, overwrite=overwrite)
+        elif overwrite or not target.exists():
+            target.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copy2(item, target)
+            copied += 1
+    return copied
+
 def init(args):
- r=root(args); v=r/".vsdd"
- for p in ["specs/features","specs/capabilities","specs/system","specs/architecture","specs/software","specs/history","changes/archive","templates"]:
-  (v/p).mkdir(parents=True,exist_ok=True)
- (r/".agents/skills").mkdir(parents=True,exist_ok=True); (r/"scripts").mkdir(parents=True,exist_ok=True)
- constitution=v/"constitution.md"
- if not constitution.exists(): constitution.write_text("# VSDD constitution\n\n- Do not invent requirements, approvals, or verification results.\n- Keep assumptions and open questions explicit.\n- Use stable IDs and bidirectional traceability.\n- Require human approval for semantic gates and baseline changes.\n- Attach evidence for every verification claim.\n",encoding="utf-8")
- config=v/"config.json"
- if not config.exists(): config.write_text(json.dumps({"version":VERSION,"stages":STAGES},indent=2)+"\n",encoding="utf-8")
- for n,t in TEMPLATE.items():
-  p=v/"templates"/n
-  if not p.exists(): p.write_text(t.replace("{name}","<FEATURE-NAME>"),encoding="utf-8")
- print(f"[OK] Initialized VSDD in {r}"); return 0
+    r = root(args)
+    v = r / ".vsdd"
+    for rel in ["specs/features", "specs/capabilities", "specs/system",
+                "specs/architecture", "specs/software", "specs/history",
+                "changes/archive", "templates"]:
+        (v / rel).mkdir(parents=True, exist_ok=True)
+    (r / ".agents").mkdir(parents=True, exist_ok=True)
+
+    skill_source = bundle_root() / ".agents"
+    if not skill_source.exists():
+        raise ValueError(f"Packaged Skills directory not found: {skill_source}")
+    skills_count = copy_tree_merge(skill_source, r / ".agents", overwrite=True)
+
+    template_source = bundle_root() / ".vsdd" / "templates"
+    if template_source.exists():
+        templates_count = copy_tree_merge(template_source, v / "templates",
+                                          overwrite=bool(getattr(args, "update_templates", False)))
+    else:
+        templates_count = 0
+
+    constitution = v / "constitution.md"
+    source_constitution = bundle_root() / ".vsdd" / "constitution.md"
+    if not constitution.exists() and source_constitution.exists():
+        shutil.copy2(source_constitution, constitution)
+    config = v / "config.json"
+    source_config = bundle_root() / ".vsdd" / "config.json"
+    if not config.exists() and source_config.exists():
+        shutil.copy2(source_config, config)
+
+    print(f"[OK] 已初始化 VSDD：{r}")
+    print(f"[OK] 已递归同步 .agents/ 下所有打包文件（包含所有 Skills）：{skills_count} 个")
+    print(f"[OK] 已同步模板：{templates_count} 个文件" +
+          ("（已覆盖更新）" if getattr(args, "update_templates", False)
+           else "（保留项目已存在的模板）"))
+    print("[NEXT] 在支持 Agent Skills 的工具中使用 .agents/skills/vsdd-orchestrate/SKILL.md")
+    return 0
+
 def new(args):
  s=args.slug
  if not slug_ok(s): raise ValueError("Change ID must be kebab-case, e.g. add-speed-warning")
