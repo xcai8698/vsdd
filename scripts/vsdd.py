@@ -187,8 +187,8 @@ def sync(args):
  f=root(args)/".vsdd/changes"/args.slug; state=load_state(f)
  if state.get("stage")!="converged" or not state.get("approvals",{}).get("converged"): raise ValueError("Only converged changes with recorded convergence approval can sync")
  if not args.approval: raise ValueError("Baseline sync requires a real approval reference")
- mapping={"feature-spec.md":Path("features")/(args.slug+".md"),"capability-map.md":Path("capabilities")/(args.slug+".md"),"system-requirements.md":Path("system")/(args.slug+".md"),"architecture.md":Path("architecture")/(args.slug+".md"),"software-requirements.md":Path("software")/(args.slug+".md")}
- chosen=args.artifact or ["feature-spec.md","system-requirements.md","architecture.md","software-requirements.md"]
+ mapping={"feature-brief.md":Path("features")/(args.slug+"-brief.md"),"source-register.md":Path("features")/(args.slug+"-sources.md"),"feature-spec.md":Path("features")/(args.slug+".md"),"capability-map.md":Path("capabilities")/(args.slug+".md"),"system-requirements.md":Path("system")/(args.slug+".md"),"architecture.md":Path("architecture")/(args.slug+".md"),"software-requirements.md":Path("software")/(args.slug+".md")}
+ chosen=args.artifact or ["feature-brief.md","source-register.md","feature-spec.md","system-requirements.md","architecture.md","software-requirements.md"]
  for name in chosen:
   if name not in mapping: raise ValueError(f"Unsupported artifact: {name}")
   src=f/name; dst=root(args)/".vsdd/specs"/mapping[name]
