@@ -104,7 +104,11 @@ def new(args):
  f=v/"changes"/s
  if f.exists(): raise ValueError(f"Change already exists: {f}")
  f.mkdir(parents=True)
- for n,t in TEMPLATE.items(): (f/n).write_text(t.replace("{name}",s.replace("-"," ").title()),encoding="utf-8")
+ template_dir = v/"templates"
+ for n,t in TEMPLATE.items():
+  project_template = template_dir/n
+  if project_template.exists(): t = project_template.read_text(encoding="utf-8")
+  (f/n).write_text(t.replace("{name}",s.replace("-"," ").title()).replace("<FEATURE-NAME>",s.replace("-"," ").title()),encoding="utf-8")
  (f/"traceability.csv").write_text("source_id,target_id,relationship,status,evidence\n",encoding="utf-8")
  (f/"state.json").write_text(json.dumps({"schema_version":"1.0","change_id":s,"stage":"intake","created_at":now(),"updated_at":now(),"owner":"unassigned","approvals":{},"notes":["Scaffold only; no approval or verification is implied."]},indent=2)+"\n",encoding="utf-8")
  print(f"[OK] Created {f}"); return 0
