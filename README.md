@@ -99,7 +99,7 @@ Run `python scripts/vsdd.py --help` for current syntax.
 - `init`: create VSDD folders and a project constitution/config if missing.
 - `new <slug>`: scaffold a feature/change from templates.
 - `status`: show active changes and stage.
-- `validate [slug]`: validate artifact structure, unresolved markers, IDs and traceability links; return non-zero on blockers.
+- `validate [slug]`: validate required artifacts, unresolved markers, and basic traceability CSV fields; return non-zero on blockers.
 - `advance <slug> --to <stage>`: attempt the next state transition only when its gate passes.
 - `trace <slug> --id <ID>`: print one-hop incoming/outgoing traceability relations.
 - `sync <slug> --approval <ref> [--artifact ...]`: promote selected approved artifacts after convergence; existing baseline files require explicit `--overwrite` and are backed up under `.vsdd/specs/history/`.
