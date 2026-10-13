@@ -1,6 +1,22 @@
 ---
 name: vsdd-explore
-description: Clarify feature intent, scope, constraints, existing behavior, and unknowns before specifying a change.
+description: 在编写规格前澄清产品价值、范围、角色、边界、约束、已有行为和未知项。
 ---
-# Explore a change
-Inspect source material and the repository before drafting. Capture outcome, users/actors, trigger, observable success, in-scope and out-of-scope behavior, constraints, dependencies, existing baseline behavior, and open questions with owners. Label each statement as confirmed, derived proposal, assumption, or unresolved. Do not convert a plausible guess into a requirement. Deliver a concise feature brief and a list of blocking questions.
+# 需求探索与澄清
+
+## 输入
+客户 PRD、Feature 描述、缺陷现象、会议结论、受控需求、现有规格及仓库证据。
+
+## 方法
+1. 用领域语言说明问题和期望结果，区分“客户要解决什么”与“客户描述的解决方案”。
+2. 优先检查已有资料与仓库，不要重复询问文档已经回答的问题；记录确切来源路径和版本。
+3. 识别角色、触发条件、系统边界、正常场景、边界/异常、非目标、依赖和质量约束。
+4. 将问题按影响与阻塞阶段排序，为每项记录负责人和错误假设可能造成的影响。
+5. 所有推导内容标记为 proposed/assumption；涉及产品行为、接口、单位、时序、安全或故障策略的缺失信息必须显式标记 unresolved。
+6. 创建或更新 feature brief 与变更记录，不在探索阶段抢先决定组件/API/代码文件。
+
+## 输出
+目标与成功度量；范围和非目标；已知事实及来源；冲突点；假设/待确认问题；建议的下一步。
+
+## 进入规格阶段的条件
+产品/领域负责人能解释期望的可观察结果，系统边界足够清晰，高影响未知项已回答或明确阻塞审批。可以提前起草，但不得将未决项伪装成正式要求。
