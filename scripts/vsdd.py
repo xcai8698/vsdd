@@ -177,12 +177,29 @@ def advance(args):
  if gate: state.setdefault("approvals",{})[args.to]={"reference":args.approval,"recorded_at":now(),"recorded_by":args.recorded_by or "unspecified"}
  state["stage"]=args.to; save_state(f,state); print(f"[OK] {cur} -> {args.to}"); return 0
 def trace(args):
- f=root(args)/".vsdd/changes"/args.slug/"traceability.csv"; count=0
+ f=root(args)/".vsdd/changes"/args.slug/"traceability.csv"
+ if not f.is_file(): print(f"[ERROR] Missing traceability file: {f}"); return 2
  with f.open(newline="",encoding="utf-8-sig") as h:
-  for row in csv.DictReader(h):
-   if args.id in (row.get("source_id"),row.get("target_id")):
-    count+=1; print(f"{row.get('source_id')} --{row.get('relationship')}[{row.get('status')}]--> {row.get('target_id')} | {row.get('evidence','')}")
- if not count: print(f"No traceability edges for {args.id}"); return 1
+  edges=[{"source":(r.get("source_id") or "").strip(),"target":(r.get("target_id") or "").strip(),
+          "relationship":(r.get("relationship") or "").strip(),"status":(r.get("status") or "").strip(),
+          "evidence":(r.get("evidence") or "").strip()} for r in csv.DictReader(h)]
+ seen_edges=set(); visited={args.id:0}; queue=[args.id]
+ while queue:
+  node=queue.pop(0); depth=visited[node]
+  if args.depth and depth >= args.depth: continue
+  for e in edges:
+   next_node=None
+   if args.direction in ["both","upstream"] and e["target"]==node: next_node=e["source"]
+   if args.direction in ["both","downstream"] and e["source"]==node: next_node=e["target"]
+   if next_node is None: continue
+   key=(e["source"],e["target"],e["relationship"])
+   if key not in seen_edges:
+    print(f"{e['source']} --{e['relationship']}[{e['status']}]--> {e['target']} | {e['evidence']}")
+    seen_edges.add(key)
+   if next_node not in visited:
+    visited[next_node]=depth+1; queue.append(next_node)
+ if not seen_edges: print(f"No traceability edges for {args.id}"); return 1
+ print(f"Reached {len(visited)} node(s), traversed {len(seen_edges)} edge(s), direction={args.direction}.")
  return 0
 def sync(args):
  f=root(args)/".vsdd/changes"/args.slug; state=load_state(f)
@@ -214,7 +231,7 @@ def main():
   if name=="validate": q.add_argument("slug",nargs="?")
   if name=="trace-check": q.add_argument("slug"); q.add_argument("--stage",choices=STAGES,help="Check a target stage instead of the current stage")
   if name=="advance": q.add_argument("slug"); q.add_argument("--to",required=True,choices=STAGES[1:]); q.add_argument("--approval"); q.add_argument("--recorded-by")
-  if name=="trace": q.add_argument("slug"); q.add_argument("--id",required=True)
+  if name=="trace": q.add_argument("slug"); q.add_argument("--id",required=True); q.add_argument("--direction",choices=["both","upstream","downstream"],default="both"); q.add_argument("--depth",type=int,default=0,help="Maximum graph hops; 0 means unlimited")
   if name=="sync": q.add_argument("slug"); q.add_argument("--approval",required=True); q.add_argument("--artifact",action="append"); q.add_argument("--overwrite",action="store_true")
   if name=="archive": q.add_argument("slug")
   q.set_defaults(fn=fn)
