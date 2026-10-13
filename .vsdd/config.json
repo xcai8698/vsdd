@@ -1,0 +1,21 @@
+{
+  "version": "0.2.0",
+  "stages": [
+    "intake",
+    "capability-mapped",
+    "specified",
+    "architecture-ready",
+    "planned",
+    "implementing",
+    "verifying",
+    "converged",
+    "archived"
+  ],
+  "traceabilityColumns": [
+    "source_id",
+    "target_id",
+    "relationship",
+    "status",
+    "evidence"
+  ]
+}
