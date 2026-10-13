@@ -1,8 +1,18 @@
-# ADR-001: <decision title>
+# ADR-001：<架构决策标题>
 
-- Status: proposed / accepted / rejected / superseded
-- Context and source:
-- Decision:
-- Alternatives considered:
-- Consequences:
-- Requirements/interfaces affected:
+- 状态：proposed / approved / rejected / superseded
+- 日期：
+- 决策负责人/批准人：
+- 关联需求：
+
+## 背景与来源
+
+## 决策驱动因素和约束
+
+## 已考虑的备选方案
+
+## 决策内容
+
+## 后果、风险、假设与未决问题
+
+## 验证方式 / 重新评估触发条件
