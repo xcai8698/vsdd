@@ -1,6 +1,23 @@
 ---
 name: vsdd-architecture
-description: Allocate feature intent into system requirements, components, interfaces, constraints, and architecture decisions.
+description: 从已批准的 Feature 行为推导系统需求、架构候选、接口、职责分配和决策记录。
 ---
-# Architecture
-Derive SYS requirements from approved feature scenarios and acceptance criteria. Inspect existing architecture and interface definitions. Document component responsibilities, data/control flows, ownership, interfaces, constraints, alternatives and trade-offs. Assign ADR IDs to material decisions. Link every system requirement to its source and planned verification. Flag missing source information rather than guessing.
+# 系统需求与架构
+
+## 输入
+已评审的 Feature Spec、能力复用结论、当前系统架构、平台约束、接口目录和真实代码/测试证据。
+
+## 方法
+1. 从 FR/AC 和权威约束推导 SYS-* 系统义务；解释推导理由，未经批准保持 proposed。
+2. 检查现有架构元素、数据/事件流、部署约束、接口、所有权、并发/生命周期、诊断与故障处理。
+3. 提出可比较的组件分配方案，写明责任、依赖、优缺点、风险、资源/实时影响和迁移成本。
+4. 对重要取舍生成 ADR-*，记录备选方案、后果、状态和批准人。
+5. 定义 IF-* 契约：生产者/消费者、数据语义/单位/有效性、生命周期、顺序、错误处理以及有来源的时序要求。
+6. 将每条 SYS 需求分配给架构元素/接口，或说明经批准的不适用理由。
+7. 检查启动/退出、并发、数据新鲜度、故障、诊断、配置变体、安全、网络安全及资源预算等适用问题。
+
+## 汽车领域特别要求
+先查明项目适用的流程标准、平台契约、安全/网络安全规则和责任人。不得在没有来源时推断 ASIL/QM 分类、时限、车辆状态、信号无效值、传输协议或失效安全策略。
+
+## 输出
+system-requirements.md、architecture.md、ADR/接口记录、FR/AC→SYS→架构元素→验证的追溯映射、未决问题与评审请求。
