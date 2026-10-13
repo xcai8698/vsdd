@@ -20,6 +20,9 @@ class VSDDCLITests(unittest.TestCase):
             state = json.loads((Path(tmp) / ".vsdd/changes/add-demo/state.json").read_text())
             self.assertEqual(state["stage"], "intake")
             self.assertTrue((Path(tmp) / ".vsdd/changes/add-demo/feature-spec.md").exists())
+            self.assertTrue((Path(tmp) / ".agents/skills/vsdd-orchestrate/SKILL.md").exists())
+            self.assertTrue((Path(tmp) / ".agents/skills/vsdd-capabilities/SKILL.md").exists())
+            self.assertTrue((Path(tmp) / ".vsdd/templates/feature-spec.md").exists())
 
     def test_invalid_slug_rejected(self):
         with tempfile.TemporaryDirectory() as tmp:
