@@ -1,5 +1,11 @@
-# System requirements: <FEATURE-NAME>
+# 系统需求：<FEATURE-NAME>
 
-| ID | Requirement (shall) | Source Feature/AC | Rationale | Verification method | Status |
-|---|---|---|---|---|---|
-| SYS-001 | <observable system behavior> | FR-001 / AC-001 | <why> | test/analysis/inspection | proposed |
+| ID | 系统应（shall）做什么 | 来源 FR/AC | 理由/约束来源 | 分配的系统元素 | 验证方法 | 状态 |
+|---|---|---|---|---|---|---|
+| SYS-001 | <可观察的系统行为> | FR-001 / AC-001 | <来源与理由> | 待分配 | 测试/分析/检查 | proposed |
+
+## 系统级验证策略
+为每条 SYS 定义验证方法、测试 ID、测试级别、环境和通过判据。无法验证时记录阻塞依赖。
+
+## 推导需求、假设与未决问题
+推导项必须注明依据；假设和未决内容不得视为正式批准要求。
