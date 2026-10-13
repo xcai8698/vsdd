@@ -1,25 +1,26 @@
 #!/usr/bin/env python3
 """VSDD workflow CLI; Python 3.10+, standard library only."""
 import argparse, csv, json, os, re, shutil, sys
+from vsdd_traceability import check_traceability, traceability_blockers
 from datetime import datetime, timezone
 from pathlib import Path
 
-VERSION = "0.3.0"
+VERSION = "0.4.0"
 STAGES = ["intake", "capability-mapped", "specified", "architecture-ready", "planned", "implementing", "verifying", "converged", "archived"]
-ARTIFACTS = ["feature-brief.md","capability-map.md","feature-spec.md","system-requirements.md","architecture.md","software-requirements.md","tasks.md","traceability.csv","verification.md","change-record.md","adr.md"]
+ARTIFACTS = ["feature-brief.md","source-register.md","capability-map.md","feature-spec.md","system-requirements.md","architecture.md","software-requirements.md","tasks.md","traceability.csv","verification.md","change-record.md","adr.md"]
 REQUIRED = {
  "intake":["feature-brief.md"],
  "capability-mapped":["feature-brief.md","capability-map.md"],
- "specified":["feature-brief.md","capability-map.md","feature-spec.md"],
- "architecture-ready":["feature-brief.md","capability-map.md","feature-spec.md","system-requirements.md","architecture.md"],
- "planned":["feature-brief.md","capability-map.md","feature-spec.md","system-requirements.md","architecture.md","software-requirements.md","tasks.md","traceability.csv"],
- "implementing":["feature-brief.md","capability-map.md","feature-spec.md","system-requirements.md","architecture.md","software-requirements.md","tasks.md","traceability.csv"],
- "verifying":["feature-brief.md","capability-map.md","feature-spec.md","system-requirements.md","architecture.md","software-requirements.md","tasks.md","traceability.csv","verification.md"],
- "converged":["feature-brief.md","capability-map.md","feature-spec.md","system-requirements.md","architecture.md","software-requirements.md","tasks.md","traceability.csv","verification.md","change-record.md"],
+ "specified":["feature-brief.md","source-register.md","capability-map.md","feature-spec.md"],
+ "architecture-ready":["feature-brief.md","source-register.md","capability-map.md","feature-spec.md","system-requirements.md","architecture.md"],
+ "planned":["feature-brief.md","source-register.md","capability-map.md","feature-spec.md","system-requirements.md","architecture.md","software-requirements.md","tasks.md","traceability.csv"],
+ "implementing":["feature-brief.md","source-register.md","capability-map.md","feature-spec.md","system-requirements.md","architecture.md","software-requirements.md","tasks.md","traceability.csv"],
+ "verifying":["feature-brief.md","source-register.md","capability-map.md","feature-spec.md","system-requirements.md","architecture.md","software-requirements.md","tasks.md","traceability.csv","verification.md"],
+ "converged":["feature-brief.md","source-register.md","capability-map.md","feature-spec.md","system-requirements.md","architecture.md","software-requirements.md","tasks.md","traceability.csv","verification.md","change-record.md"],
  "archived":["change-record.md","verification.md"]}
 MARKERS = ["UNRESOLVED","[NEEDS CLARIFICATION]","{{","TODO: APPROVAL REQUIRED"]
 TEMPLATE = {
-"feature-brief.md":"# Feature brief: {name}\n\n## Outcome\nDescribe user/business value and source.\n\n## Scope\n- In scope:\n- Out of scope:\n\n## Constraints and assumptions\nSeparate confirmed facts from assumptions.\n\n## Open questions\n- None / list questions with owner and due date.\n",
+"feature-brief.md":"# Feature brief: {name}\n\n- Feature ID: FB-001\n- Source:\n- Status: proposed\n\n## Outcome\nDescribe user/business value and source.\n\n## Scope\n- In scope:\n- Out of scope:\n\n## Constraints and assumptions\nSeparate confirmed facts from assumptions.\n\n## Open questions\n- None / list questions with owner and due date.\n",\n"source-register.md":"# Source register: {name}\n\n- Coverage review: pending\n- Reviewed by:\n- Review record:\n\n| Source ID | Source type | Location / revision | Requirement or intent | Disposition | Rationale / owner |\n|---|---|---|---|---|---|\n| SRC-001 | <customer PRD, interview, issue> | <path and revision> | <one atomic obligation or intent> | unresolved | <owner or disposition rationale> |\n",
 "capability-map.md":"# Capability map: {name}\n\n| Candidate capability | Evidence/location | Decision (reuse/extend/create/reject) | Rationale / gap | Owner |\n|---|---|---|---|---|\n",
 "feature-spec.md":"# Feature specification: {name}\n\n## Source and status\n- Source(s):\n- Status: proposed / approved\n\n## Scenarios\n### FR-001: <scenario name>\n**Given** <context> **When** <event> **Then** <observable outcome>\n\n## Acceptance criteria\n- AC-001: measurable pass/fail condition linked to FR-001.\n\n## Open decisions\n",
 "system-requirements.md":"# System requirements: {name}\n\n| ID | Requirement (shall) | Source Feature/AC | Rationale | Verification method | Status |\n|---|---|---|---|---|---|\n| SYS-001 | <observable system behavior> | FR-001 | <why> | test/analysis/inspection | proposed |\n",
@@ -131,7 +132,22 @@ def validate_folder(f,stage=None):
   with (f/"traceability.csv").open(newline="",encoding="utf-8-sig") as h:
    for i,row in enumerate(csv.DictReader(h),2):
     if not row.get("source_id") or not row.get("target_id") or not row.get("relationship"): blockers.append(f"traceability.csv:{i}: source_id, target_id, and relationship are required")
- return blockers
+ if st in ["specified","architecture-ready","planned","implementing","verifying","converged"]:
+  blockers.extend(traceability_blockers(f, f.parents[2], st))
+ return sorted(set(blockers))
+def trace_check(args):
+ f=root(args)/".vsdd/changes"/args.slug
+ if not f.is_dir(): print(f"[ERROR] Unknown change: {f}"); return 2
+ try: current=load_state(f).get("stage","intake")
+ except Exception as e: print(f"[ERROR] state.json: {e}"); return 2
+ stage=args.stage or current
+ blockers, summary=check_traceability(f,root(args),stage)
+ print(f"{args.slug} traceability at {stage}: "+("PASS" if not blockers else "BLOCKED"))
+ print("Declared IDs: "+", ".join(f"{key}={value}" for key,value in summary.get("counts",{}).items()))
+ if "coverage" in summary: print("Coverage: "+", ".join(f"{key}={value}" for key,value in summary["coverage"].items()))
+ if summary.get("note"): print("Note: "+summary["note"])
+ for blocker in blockers: print("  - "+blocker)
+ return int(bool(blockers))
 def status(args):
  for f in active(root(args)):
   try: st=load_state(f).get("stage","?")
@@ -190,11 +206,12 @@ def archive(args):
  target.parent.mkdir(parents=True,exist_ok=True); shutil.move(str(f),str(target)); print(f"[OK] Archived to {target}"); return 0
 def main():
  p=argparse.ArgumentParser(description="VSDD — Verifiable Spec-Driven Development"); p.add_argument("--version",action="version",version=VERSION); sub=p.add_subparsers(dest="cmd",required=True)
- for name,fn in [("init",init),("new",new),("status",status),("validate",validate),("advance",advance),("trace",trace),("sync",sync),("archive",archive)]:
+ for name,fn in [("init",init),("new",new),("status",status),("validate",validate),("trace-check",trace_check),("advance",advance),("trace",trace),("sync",sync),("archive",archive)]:
   q=sub.add_parser(name); q.add_argument("--root",default=".")
   if name=="init": q.add_argument("--update-templates",action="store_true",help="Overwrite project templates with bundled versions")
   if name=="new": q.add_argument("slug")
   if name=="validate": q.add_argument("slug",nargs="?")
+  if name=="trace-check": q.add_argument("slug"); q.add_argument("--stage",choices=STAGES,help="Check a target stage instead of the current stage")
   if name=="advance": q.add_argument("slug"); q.add_argument("--to",required=True,choices=STAGES[1:]); q.add_argument("--approval"); q.add_argument("--recorded-by")
   if name=="trace": q.add_argument("slug"); q.add_argument("--id",required=True)
   if name=="sync": q.add_argument("slug"); q.add_argument("--approval",required=True); q.add_argument("--artifact",action="append"); q.add_argument("--overwrite",action="store_true")
