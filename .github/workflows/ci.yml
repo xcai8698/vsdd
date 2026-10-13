@@ -14,7 +14,23 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
+      - name: Check shell installer syntax
+        run: bash -n install.sh
       - name: Compile CLI
         run: python -m py_compile scripts/vsdd.py
       - name: Run CLI tests
         run: python -m unittest discover -s tests -v
+      - name: Smoke test global install and project init
+        shell: bash
+        run: |
+          set -euo pipefail
+          TMP="$(mktemp -d)"
+          bash install.sh "$TMP/prefix"
+          "$TMP/prefix/bin/vsdd" --version
+          "$TMP/prefix/bin/vsdd" init --root "$TMP/project"
+          test -f "$TMP/project/.agents/skills/vsdd-orchestrate/SKILL.md"
+          test -f "$TMP/project/.agents/skills/vsdd-verify/SKILL.md"
+          test -f "$TMP/project/.agents/skills/vsdd-change/SKILL.md"
+          test -f "$TMP/project/.vsdd/templates/feature-spec.md"
+          "$TMP/prefix/bin/vsdd" new demo-feature --root "$TMP/project"
+          test -f "$TMP/project/.vsdd/changes/demo-feature/feature-spec.md"
