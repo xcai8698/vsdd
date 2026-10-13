@@ -1,6 +1,25 @@
 ---
 name: vsdd-implement
-description: Implement a small traceable vertical slice while preserving repository conventions and traceability.
+description: 按需求可追溯的小型垂直切片实现软件，并保持代码、测试、任务和证据同步。
 ---
-# Implement
-Read relevant code and tests first. Confirm file paths, interfaces, conventions, and build commands before editing. Implement only behavior covered by approved requirements. Keep changes small, update task status and trace links, add or modify tests, and review the diff for unrelated changes. Report commands actually run and distinguish unavailable target tests from passed tests.
+# 实现一个 VSDD 任务/切片
+
+## 修改前
+1. 阅读项目宪章、已批准 Feature/System/Software Spec、架构/ADR、任务、追溯表和相关测试。
+2. 检查任务依赖、工作区、分支和必要审批，保留用户已有未提交改动。
+3. 阅读真实文件、符号和上下文惯例。计划路径不正确时先更新计划，不能创建重复组件来绕过。
+4. 选择范围最小、验收清晰的垂直切片。
+
+## 实现期间
+- 只修改关联任务需要的代码，不静默改变需求或架构。
+- 同步添加/修改测试和追溯关系。
+- 遵循项目语言、线程、资源生命周期、错误处理、诊断、API、风格和构建惯例。
+- 不得擅自补充阈值、超时、重试、调度、无效值行为或兼容回退。
+- 若契约无法实现或与代码冲突，暂停争议行为并提出变更影响分析。
+- 不把凭证、私钥、访问 token 或受限客户数据提交到仓库。
+
+## 标记完成前
+运行实际相关测试、lint、静态分析；记录真实命令、环境、退出码和报告路径。检查 diff、范围、安全/网络安全、并发/生命周期和意外改动。只有满足完成定义并具备证据后才勾选任务。
+
+## 停止条件
+需求冲突、安全边界不清、资料/测试环境缺失、测试失败原因不明、接口未经批准或实现会违反架构时，停止猜测并将问题交回责任工件。
