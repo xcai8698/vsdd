@@ -1,10 +1,21 @@
-# Change record: <FEATURE-NAME>
+# 变更记录：<FEATURE-NAME>
 
-## Summary
-## Decisions and approvals
-Reference real review/decision records. Do not invent approvals.
-## Changed artifacts and code
-## Verification evidence
-## Traceability impact
-## Remaining gaps and disposition
-## Baseline sync / archive record
+- Change ID：
+- 基线/版本：
+- 负责人：
+
+## 变更目的
+
+## 修改的工件、ID、接口与代码
+| 工件/ID | 修改前 | 修改后 | 原因 | 批准记录 |
+|---|---|---|---|---|
+
+## 影响分析
+| 变更源 ID | 受影响下游项 | 状态（still-valid/needs-review/invalidated/not-applicable） | 理由/证据 | 负责人 |
+|---|---|---|---|---|
+
+## 决策与评审记录
+
+## 验证摘要与残余风险
+
+## 基线同步与归档
