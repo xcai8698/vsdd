@@ -25,12 +25,12 @@ for item in .agents .vsdd scripts docs examples README.md README.zh-CN.md LICENS
   fi
 done
 
-cat > "$BIN_DIR/vsdd" <<EOF
-#!/usr/bin/env bash
-set -e
-export VSDD_HOME="${VSDD_HOME:-$SHARE_DIR}"
-exec python3 "$VSDD_HOME/scripts/vsdd.py" "$@"
-EOF
+printf '%s\n' \
+  '#!/usr/bin/env bash' \
+  'set -e' \
+  "export VSDD_HOME=\"\${VSDD_HOME:-$SHARE_DIR}\"" \
+  'exec python3 "$VSDD_HOME/scripts/vsdd.py" "$@"' \
+  > "$BIN_DIR/vsdd"
 chmod 755 "$BIN_DIR/vsdd"
 
 PROFILE_LINE='export PATH="$HOME/.local/bin:$PATH"'
