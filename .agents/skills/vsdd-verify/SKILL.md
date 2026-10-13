@@ -1,6 +1,25 @@
 ---
 name: vsdd-verify
-description: Verify requirement-level behavior and record reproducible evidence.
+description: 按需求执行验证并记录可复现证据、失败、覆盖缺口和证据失效情况。
 ---
-# Verify
-Map each acceptance criterion and SWE requirement to a test or other approved verification method. Execute available tests, record exact command/procedure, environment/configuration, actual result, pass/fail/block status, and evidence location. A test file existing is not a pass. Identify uncovered requirements and test limitations explicitly; do not claim target/HIL testing occurred unless it did.
+# 需求验证与证据
+
+## 规划
+为每条 FR/SYS/SWE/AC 选择合适方法：单元/组件/集成/系统测试、静态分析、评审、模型分析、测量、台架/整车测试等。每项方法必须有明确判据和环境。
+
+## 执行
+1. 确认 commit、构建、配置、目标平台和工具版本。
+2. 执行仓库中真实可用的检查；记录命令、退出码、测试 run/report 路径和观察到的结果。
+3. 将实际表现与已批准需求和验收判据逐条对比。构建通过不等于未测试的功能已经通过。
+4. 覆盖适用的边界、负向、异常和回归场景。
+5. 诚实记录失败、flaky、排除项、未执行项、覆盖缺口与豁免；不得通过降低需求标准来让测试变绿。
+6. 检查需求、代码、构建、配置或环境变化是否使旧证据失效。
+
+## 证据字段
+VE-*：需求/AC ID、测试 ID、commit/build/config、目标/环境、命令/方法、原始证据位置、预期判据、实际结果、pass/fail/inconclusive、执行者和必要的复核人。
+
+## 门禁
+测试未执行、判据缺失、日志缺失或环境不匹配时，不得标记 verified。失败或结论不确定会阻塞收敛，除非授权责任人记录了正式处置与残余风险。
+
+## 输出
+更新 verification.md 和追溯关系，列明通过/失败/未执行检查及每个缺口的责任工件。
