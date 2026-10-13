@@ -141,6 +141,8 @@ vsdd archive speed-warning
 
 只有实际完成收敛并记录审批后才允许同步和归档。覆盖已有基线时，必须先审查差异，并使用显式的 `--overwrite` 参数；旧版本会备份到 `.vsdd/specs/history/`。
 
+补充阅读：[工作流与质量门禁（中文版）](docs/zh-CN/工作流与质量门禁.md)。
+
 ## 5. Skills 一览
 
 | Skill | 主要职责 |
