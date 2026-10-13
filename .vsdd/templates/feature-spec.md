@@ -1,15 +1,21 @@
-# Feature specification: <FEATURE-NAME>
+# Feature 规格：<FEATURE-NAME>
 
-## Source and status
-- Source(s):
-- Status: proposed / approved
+## 来源与状态
+- 来源：
+- 状态：proposed / approved
 
-## Scenarios
-### FR-001: <scenario>
-**Given** <context> **When** <event> **Then** <observable outcome>
+## 行为与场景
+### FR-001：<场景名称>
+**Given（前置条件）** <上下文> **When（触发）** <事件> **Then（结果）** <可观察结果>
 
-## Acceptance criteria
-- AC-001: <measurable pass/fail condition>
+## 验收标准
+- AC-001：明确、可重复判定的通过/失败条件，并关联 FR ID。
 
-## Constraints and exclusions
-## Open decisions
+## 输入、输出、接口和依赖
+仅使用已验证的接口与语义。单位、有效值、来源、更新频率或所有权未知时，应明确标记待澄清。
+
+## 边界、异常与非目标
+
+## 待决问题
+| ID | 问题 | 影响 | 负责人 | 必须解决于 | 状态 |
+|---|---|---|---|---|---|
