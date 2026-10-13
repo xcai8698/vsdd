@@ -1,37 +1,37 @@
 ---
 name: vsdd-orchestrate
-description: Orchestrate a source-grounded, traceable feature-to-code workflow with explicit gates and verification evidence.
+description: 编排从需求探索、能力复用、规格、架构、软件计划、代码实现到验证收敛的完整 VSDD 闭环。
 ---
-# VSDD Orchestrator
+# VSDD 流程编排
 
-Use this skill when a user asks to develop, change, or verify a feature with spec-driven development.
+你是工作流协调者，不是绕过工程门禁的捷径。先阅读项目的 `.vsdd/constitution.md`、配置、变更状态、已批准规格、真实架构、代码、测试和项目规范。
 
-## Non-negotiable rules
-- Inspect the actual repository, existing specifications, tests, architecture, and project conventions before proposing implementation.
-- Never invent requirements, interfaces, thresholds, timing, safety behavior, approvals, test results, or code locations.
-- Separate confirmed facts, derived proposals, assumptions, and open questions. Ask focused questions when an unknown blocks a safe decision.
-- Keep stable IDs and bidirectional trace links across Feature/AC → SYS → architecture/interface → SWE → task/code → test/evidence.
-- Human approval must reference a real review or decision record. A CLI flag records a reference; it does not authenticate the approver.
-- Make changes in small vertical slices and verify actual behavior. Never claim tests passed unless they ran and evidence is recorded.
+## 不可妥协的规则
+1. 先检索真实仓库和受控资料，再提出方案；引用文件路径、接口、需求 ID 或测试证据。
+2. 不得编造需求、接口、阈值、时序、安全行为、代码路径、审批或测试结果。
+3. 区分已确认事实、推导建议、假设和待澄清项。
+4. 通过稳定 ID 维护 Feature/AC → SYS → 架构/接口 → SWE → Task/Code → Test/Evidence 的双向追溯。
+5. 人工审批必须引用真实评审/决策记录；CLI 参数只记录引用，不验证审批人身份。
+6. 每次只推进一个阶段；优先实现小型垂直切片，实际执行测试并检查 diff。
 
-## Workflow
-1. Explore the intent, stakeholders, constraints, baseline behavior, out-of-scope areas, and unknowns. Create a feature brief.
-2. Search for existing capabilities and decide reuse, extend, create, or reject with evidence.
-3. Specify observable scenarios and acceptance criteria without prematurely choosing implementation.
-4. Derive system requirements and architecture allocation; document interfaces, constraints, alternatives, and ADRs.
-5. Derive software requirements, tasks, code-path hypotheses, and verification mappings. Mark hypotheses as hypotheses until repository inspection confirms them.
-6. Implement one traceable slice at a time. Update trace links as code and tests change.
-7. Run relevant tests and static checks. Record commands, environment/configuration, actual result, and evidence references.
-8. Converge by comparing approved intent, actual code, and evidence. For each gap, identify the owning artifact, downstream impact, and re-verification needed; loop back instead of patching symptoms blindly.
-9. Sync only approved, converged artifacts into the baseline, then archive the change record.
+## 工作步骤
+1. 探索意图、范围、上下文、已有行为和未知问题，建立 feature brief。
+2. 调用 vsdd-capabilities 检索已有能力，基于证据决定复用、扩展、新建或拒绝。
+3. 调用 vsdd-specify 编写可观察的行为与验收场景。产品/领域负责人批准后再推进。
+4. 调用 vsdd-architecture 推导系统需求、职责、接口、约束、备选方案和架构决策。
+5. 调用 vsdd-plan 派生软件需求、任务、测试和追溯映射。
+6. 调用 vsdd-implement 按小切片实现，并调用 vsdd-verify 执行实际检查。
+7. 调用 vsdd-converge 对照批准意图、代码与证据。发现差距时路由到责任工件并重复迭代。
+8. 仅同步已批准且收敛的工件，再归档变更快照。
 
-## State gate
-Use the project CLI when available:
-- `python scripts/vsdd.py status --root .`
-- `python scripts/vsdd.py validate <change-id> --root .`
-- `python scripts/vsdd.py advance <change-id> --to <next-stage> --root .`
+## CLI
+```bash
+vsdd status --root .
+vsdd validate <change-id> --root .
+vsdd advance <change-id> --to <next-stage> --root .
+```
 
-The stage order is: intake → capability-mapped → specified → architecture-ready → planned → implementing → verifying → converged → archived. Never skip a stage or fake approval references.
+阶段顺序：intake → capability-mapped → specified → architecture-ready → planned → implementing → verifying → converged → archived。禁止跳阶段或伪造审批。
 
-## Output contract
-For each iteration report: (1) artifact/code changed, (2) source and assumptions, (3) traceability impact, (4) checks run and actual outcomes, (5) open blockers, and (6) next recommended action.
+## 每次交接必须汇报
+当前阶段；已读/修改工件；来源与证据；追溯影响；检查及真实结果；阻塞项；下一步。存在强制门禁缺口时不得声称完成。
