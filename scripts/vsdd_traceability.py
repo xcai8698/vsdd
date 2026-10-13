@@ -146,10 +146,12 @@ def check_traceability(folder, project_root, stage):
                 seen = set()
                 for line, row in enumerate(reader, 2):
                     a, b = ((row.get(k) or "").strip() for k in ("source_id", "target_id"))
-                    rel, status = ((row.get(k) or "").strip() for k in ("relationship", "status"))
+                    rel, status, evidence = ((row.get(k) or "").strip() for k in ("relationship", "status", "evidence"))
                     if not a or not b or not rel or not status:
                         blockers.append(f"traceability.csv:{line}: source_id, target_id, relationship, status are required")
                         continue
+                    if level >= LEVEL["specified"] and not _ok(evidence):
+                        blockers.append(f"traceability.csv:{line}: edge {a} -> {b} needs evidence/rationale")
                     if (a, b, rel) in seen:
                         blockers.append(f"traceability.csv:{line}: duplicate edge {a} -> {b} ({rel})")
                     seen.add((a, b, rel))
