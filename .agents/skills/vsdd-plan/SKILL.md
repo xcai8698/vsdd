@@ -1,6 +1,22 @@
 ---
 name: vsdd-plan
-description: Decompose approved architecture into software requirements, tasks, and verification mappings.
+description: 将已批准系统架构分解为软件需求、真实仓库中的实现任务、依赖关系和验证映射。
 ---
-# Plan
-Allocate SYS requirements to testable SWE requirements and concrete implementation slices. Each task should name requirement IDs, likely code areas (clearly marked as hypotheses until inspected), dependencies, and tests. Maintain traceability edges from feature through SYS/SWE/task/test. Prefer a thin vertical slice over broad, unverified parallel work.
+# 软件需求与实施计划
+
+## 先做仓库侦察
+检查构建配置、模块边界、相关符号、接口头文件、测试与 fixtures、配置项、代码所有者和近期变更。引用准确路径和符号。未检查的路径只能标为假设，不能当成已分配位置。
+
+## 推导软件义务
+1. 从 SYS/IF/ADR 和架构分配推导 SWE-*，保证其可实现、可测试。
+2. 记录所属组件、接口契约、错误/无效数据行为、验证判据和正式来源。
+3. 列出候选代码位置；只有实际检索验证后才能标记为已确认。
+
+## 任务必须可执行
+每个 T-* 关联需求/测试 ID，说明实际路径、动作、依赖、预期结果与证据。尽量按垂直切片拆分；只有确认依赖和文件无冲突时才标记并行。测试实现、测试执行、集成回归和追溯更新必须进入计划。
+
+## 追溯规则
+维护 FR/AC→SYS、SYS→组件/接口、SYS/IF→SWE、SWE→任务、需求→测试/验证证据的关系。没有实际实现/测试证据时不得把边标记为 verified。
+
+## 输出与门禁
+更新 software-requirements.md、tasks.md、测试映射和 traceability.csv；执行 CLI 与人工一致性检查。软件负责人和测试负责人批准计划后，才开始大范围实现。
