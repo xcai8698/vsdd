@@ -1,6 +1,24 @@
 ---
 name: vsdd-capabilities
-description: Discover and evaluate reusable capabilities before creating new functionality.
+description: 从现有规格、架构、接口、代码和测试中发现能力，评估复用、扩展、新建或拒绝的合理性。
 ---
-# Capability reuse
-Search existing specs, source code, interfaces, tests, configuration, and ownership docs. For each candidate, record evidence/location, behavior match, constraints, integration cost, gap, owner, and decision: reuse, extend, create, or reject. Do not claim a capability exists without repository evidence. Record why a new capability is needed if reuse is rejected.
+# Capability 识别与复用评估
+
+## 必须先检索
+按项目情况检索：能力目录、已批准规格、系统/软件需求、架构与接口契约、源代码/API、测试、构建配置、所有者文档和历史变更。记录检索范围；无法访问的系统不得声称已检查。
+
+## 能力不是一个名字
+每个候选能力应描述责任边界、明确不负责的内容、输入/事件、输出/状态、数据单位/有效性、前后置条件、故障行为、时序/资源约束（仅限有来源的数据）、依赖、平台变体、所有者、契约版本和验证证据。
+
+## 比较决策
+为每项候选给出 reuse / extend / compose / create / reject：
+- 行为语义是否一致，而非名称是否相似；
+- 接口、生命周期、线程模型、实时/资源约束是否匹配；
+- 安全/网络安全、平台兼容性、所有权和测试证据；
+- 复用成本、维护成本、版本兼容和重复实现风险。
+
+## 输出
+更新 capability-map.md，记录精确证据路径、匹配点、差异、风险、负责人和决策状态。扩展方案说明向后兼容性；新建方案说明已经检索过哪些选项以及为何不能复用。
+
+## 门禁
+没有架构/领域责任人批准时，复用决策仍是候选。没有真实契约、负责人和测试的新增能力不能被描述为已成熟的公共能力。
