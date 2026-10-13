@@ -4,7 +4,7 @@ import argparse, csv, json, os, re, shutil, sys
 from datetime import datetime, timezone
 from pathlib import Path
 
-VERSION = "0.2.0"
+VERSION = "0.3.0"
 STAGES = ["intake", "capability-mapped", "specified", "architecture-ready", "planned", "implementing", "verifying", "converged", "archived"]
 ARTIFACTS = ["feature-brief.md","capability-map.md","feature-spec.md","system-requirements.md","architecture.md","software-requirements.md","tasks.md","traceability.csv","verification.md","change-record.md","adr.md"]
 REQUIRED = {
