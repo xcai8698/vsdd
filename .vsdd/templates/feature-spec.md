@@ -16,6 +16,20 @@
 
 ## 边界、异常与非目标
 
+## 规格完备性检查
+每一行都必须标记适用性并给出评审记录。适用项必须关联 FR 与 AC；不适用项必须说明理由。
+| dimension | applicability (applicable / not-applicable / unresolved) | FR / AC IDs | rationale / evidence | review record |
+|---|---|---|---|---|
+| normal | unresolved |  |  |  |
+| boundary | unresolved |  |  |  |
+| invalid-input | unresolved |  |  |  |
+| state-transition | unresolved |  |  |  |
+| failure | unresolved |  |  |  |
+| recovery | unresolved |  |  |  |
+| timing-performance | unresolved |  |  |  |
+| interface-semantics | unresolved |  |  |  |
+| safety-security-diagnostics | unresolved |  |  |  |
+
 ## 待决问题
 | ID | 问题 | 影响 | 负责人 | 必须解决于 | 状态 |
 |---|---|---|---|---|---|
