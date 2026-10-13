@@ -16,7 +16,7 @@ description: 将已批准系统架构分解为软件需求、真实仓库中的�
 每个 T-* 关联需求/测试 ID，说明实际路径、动作、依赖、预期结果与证据。尽量按垂直切片拆分；只有确认依赖和文件无冲突时才标记并行。测试实现、测试执行、集成回归和追溯更新必须进入计划。
 
 ## 追溯规则
-维护 FR/AC→SYS、SYS→组件/接口、SYS/IF→SWE、SWE→任务、需求→测试/验证证据的关系。没有实际实现/测试证据时不得把边标记为 verified。
+维护 SRC/FB→FR→AC→SYS→ARCH/SWE→Task/File→TC/Evidence 的双向关系；为每条追溯边提供来源或理由，稳定 ID 必须在工件中声明。运行 vsdd trace-check <change-id> --stage planned 并消除所有阻塞项。没有实际实现/测试证据时不得把边标记为 verified。
 
 ## 输出与门禁
 更新 software-requirements.md、tasks.md、测试映射和 traceability.csv；执行 CLI 与人工一致性检查。软件负责人和测试负责人批准计划后，才开始大范围实现。
