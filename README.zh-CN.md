@@ -95,6 +95,7 @@ vsdd new speed-warning
 ```text
 .vsdd/changes/speed-warning/
 ├── feature-brief.md
+├── source-register.md
 ├── capability-map.md
 ├── feature-spec.md
 ├── system-requirements.md
@@ -121,8 +122,13 @@ Orchestrator 会调用各阶段的 Skill，并指导 AI 按“探索 → 能力�
 ```bash
 vsdd status
 vsdd validate speed-warning
-vsdd trace speed-warning --id FR-001
+vsdd trace-check speed-warning
+vsdd trace-check speed-warning --stage planned
+vsdd trace speed-warning --id FR-001 --direction both
 ```
+
+`vsdd trace-check <change-id>` 按当前阶段检查追溯覆盖缺口；`vsdd validate` 在 specified 及后续阶段自动执行同一追溯门禁。可用 `--direction upstream|downstream|both` 递归查看追溯链。
+
 
 ### 按门禁逐阶段推进
 
