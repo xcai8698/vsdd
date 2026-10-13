@@ -135,3 +135,10 @@ VSDD borrows specification clarification, planning, task sequencing and analysis
 ## License
 
 MIT. See [LICENSE](LICENSE).
+
+
+## Traceability quality gates
+
+Run `vsdd trace-check <change-id>` to inspect coverage at the current stage, or `vsdd trace-check <change-id> --stage planned` to preview a later gate. `vsdd validate` runs the same checks automatically from the `specified` stage onward. The checker detects undeclared/duplicate IDs, missing incoming or outgoing trace edges, uncovered source obligations, missing architecture/software allocation, orphan tasks/tests, absent implementation file mappings, and incomplete verification evidence. Use `vsdd trace <change-id> --id FR-001 --direction upstream|downstream|both` to navigate the connected trace graph.
+
+Static checks cannot establish semantic equivalence of natural-language statements. VSDD therefore requires a reviewed `source-register.md` and a completed Feature Spec completeness checklist with real review-record references.
