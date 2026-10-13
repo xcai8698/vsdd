@@ -1,4 +1,13 @@
-# Verification: <FEATURE-NAME>
+# 验证报告：<FEATURE-NAME>
 
-| Test/evidence ID | Requirement/AC | Environment/configuration | Command/procedure | Actual result | Pass/fail/blocked | Evidence link |
-|---|---|---|---|---|---|---|
+- 构建/commit/配置：
+- 目标平台/环境/工具版本：
+- 执行者/评审人：
+- 总体状态：NOT-RUN
+
+| 证据 ID | 需求/AC | 测试 ID | 方法/环境/命令 | 预期判据 | 实际结果 | 状态 | 证据路径 |
+|---|---|---|---|---|---|---|---|
+| VE-001 | AC-001 | TC-001 | 待定义 | 待定义 | 未执行 | blocked | 无 |
+
+## 失败、未执行项、覆盖缺口与残余风险
+记录原始日志位置、复现情况、豁免和批准人。创建测试不等于测试通过。
