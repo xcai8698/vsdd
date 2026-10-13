@@ -1,13 +1,14 @@
 # Architecture: speed warning
 
 ## Context and constraints
-This is an illustrative allocation only. Inspect the actual vehicle platform architecture, signal contracts, sound arbitration and telltale ownership before selecting components.
+Illustrative only. No target-project component or interface has been approved.
 
-## Candidate flow
-Vehicle speed + configured limit → exceedance evaluation → warning request → sound arbitration / telltale presentation
+## Components and responsibilities
+## Interfaces and data flow
+## Allocation
+| ARCH ID | Element / interface | Responsibility | Source SYS ID | Status |
+|---|---|---|---|---|
+| ARCH-001 | Overspeed condition evaluation | TBD after authoritative input semantics are confirmed | SYS-001 | proposed |
+| ARCH-002 | Audible/visual output request boundary | TBD after project interfaces are confirmed | SYS-002 | proposed |
 
-## Open questions
-- Authoritative signal names, units, validity and update rates
-- Owner of exceedance calculation and calibration
-- Sound and telltale arbitration/priority
-- Degraded behavior, diagnostics and safety/security constraints
+## Risks and alternatives
