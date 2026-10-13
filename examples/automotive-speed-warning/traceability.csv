@@ -1,0 +1,9 @@
+source_id,target_id,relationship,status,evidence
+FR-001,AC-001,constrains,proposed,Illustrative example only; requires product approval
+AC-001,SYS-001,derives,proposed,See system-requirements.md
+AC-001,SYS-002,derives,proposed,See system-requirements.md
+SYS-001,SWE-001,allocates,proposed,Architecture allocation pending
+SYS-002,SWE-002,allocates,proposed,Interface contract pending
+SWE-001,T-004,implemented-by,proposed,Implementation not performed
+SWE-001,TC-001,verified-by,proposed,Test/evidence not yet available
+SWE-002,TC-002,verified-by,proposed,Test/evidence not yet available
