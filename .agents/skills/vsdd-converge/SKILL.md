@@ -1,6 +1,21 @@
 ---
 name: vsdd-converge
-description: Compare approved intent, implementation, and verification evidence, then route gaps to their owning artifacts.
+description: 对比批准需求、实际实现和验证证据，识别差距并回流到正确责任工件，直到满足收敛条件。
 ---
-# Converge
-Compare feature scenarios and approved requirements with actual code, tests, and results. Check forward and backward traceability, changed interfaces, unresolved questions, regression impact, and evidence freshness. For each gap, record severity, owning artifact, downstream impact, owner, and next action. Return to specification, architecture, planning, implementation, or verification as appropriate. Convergence means no unaccepted gaps remain; it is not a self-approved status label.
+# 收敛检查
+
+这是先读取和评估的活动。干净的 diff、完成的任务勾选或绿灯构建都不足以单独证明收敛。
+
+## 检查方法
+1. 阅读最新批准的 Feature/System/Software Spec、架构/ADR、任务、追溯表和验证报告。
+2. 检查真实代码、测试、配置、diff、commit 和执行证据。
+3. 对每项验收标准分类：有证据满足、部分满足、未实现、未验证、相矛盾、证据失效或经批准不适用。
+4. 双向检查：需求是否映射到实现/测试/证据；代码变更是否能追溯到批准需求或理由。
+5. 识别漏测、过期证据、越界修改、重复逻辑、接口偏离和文档与实现不一致。
+6. 为每个差距新增 T-* 收敛任务，写责任 ID、路径/分析、依赖和验收证据；不要删除历史掩盖问题。
+7. 将根因回流到拥有该语义的 Feature、能力映射、系统架构、软件需求、实现或验证计划。
+
+## 只有满足以下条件才收敛
+范围内需求都有适当的实际执行证据或经批准例外；任务完成且有代码/测试/评审链接；没有未解释追溯断点或未审查的证据失效；失败和偏差已处置；必要人工审批已记录；CLI/CI 门禁通过。
+
+否则报告 NOT CONVERGED，追加任务并回到相应阶段。收敛后才同步已批准基线并归档快照。
