@@ -1,6 +1,23 @@
 ---
 name: vsdd-change
-description: Analyze change impact and invalidate downstream artifacts and evidence when upstream intent changes.
+description: 管理需求、接口或架构变更，识别下游影响，并在必要时使相关规格、代码计划和验证证据失效。
 ---
-# Change impact
-When a source requirement, interface, architecture decision, or acceptance criterion changes, identify dependent requirements, tasks, code, tests, evidence, and baseline artifacts. Mark stale evidence invalidated and plan re-verification. Record superseded IDs instead of silently reusing an ID for a different meaning. Preserve the old approved baseline until the new change passes its gates.
+# 变更与影响分析
+
+## 触发场景
+产品调整行为、发现需求冲突、测试暴露规格缺口、能力契约变化、架构需要修改或仓库证据推翻原规划时使用。
+
+## 流程
+1. 记录变更来源、提出者、理由、权威性和原基线版本。
+2. 以 delta 说明新增、修改、删除或替代的内容；审批前保留原批准基线。
+3. 沿追溯图查找下游需求、任务、代码、接口和测试；并在仓库中搜索实际使用点。
+4. 将每个下游项标记为 still-valid、needs-review、invalidated 或 not-applicable，并记录理由/负责人。
+5. 先更新拥有该语义的上游工件；变更获批后按依赖顺序更新能力映射、系统分配、软件需求、任务和测试预期。
+6. 若变化可能影响旧结果，标记测试证据失效并重新执行验证。
+7. 记录审批、更新追溯关系，再运行一致性/质量检查。
+
+## 迭代环
+观察差距 → 确认责任工件 → 提出 delta → 评审批准 → 传播下游影响 → 实现最小切片 → 重新验证受影响范围 → 收敛。
+
+## 保护规则
+未经评审不覆盖批准基线；不能因为有链接就沿用旧的通过结果；不擅自扩大范围；区分基于证据的缺陷诊断与纯推测；不确定时明确写出来。
