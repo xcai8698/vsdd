@@ -188,6 +188,7 @@ def main():
  p=argparse.ArgumentParser(description="VSDD — Verifiable Spec-Driven Development"); p.add_argument("--version",action="version",version=VERSION); sub=p.add_subparsers(dest="cmd",required=True)
  for name,fn in [("init",init),("new",new),("status",status),("validate",validate),("advance",advance),("trace",trace),("sync",sync),("archive",archive)]:
   q=sub.add_parser(name); q.add_argument("--root",default=".")
+  if name=="init": q.add_argument("--update-templates",action="store_true",help="Overwrite project templates with bundled versions")
   if name=="new": q.add_argument("slug")
   if name=="validate": q.add_argument("slug",nargs="?")
   if name=="advance": q.add_argument("slug"); q.add_argument("--to",required=True,choices=STAGES[1:]); q.add_argument("--approval"); q.add_argument("--recorded-by")
