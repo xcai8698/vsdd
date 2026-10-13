@@ -1,10 +1,34 @@
-# Architecture: <FEATURE-NAME>
+# 系统架构与分配：<FEATURE-NAME>
 
-## Context and constraints
-## Components and responsibilities
-## Interfaces and data flow
-## Allocation
-| System requirement | Component/interface | Rationale |
-|---|---|---|
-## Alternatives and trade-offs
-## Risks and unresolved questions
+- 状态：proposed
+- 架构基线/来源：
+- 必需评审人：
+
+## 架构上下文、驱动因素与约束
+
+## 候选方案与取舍
+| 方案 | 描述 | 证据/先例 | 优点 | 缺点/风险 | 约束冲突 |
+|---|---|---|---|---|---|
+| A | 待分析 | 待检索 | 待分析 | 待分析 | 未知 |
+
+## 选定方案与理由
+记录备选方案、决定依据与批准状态。
+
+## 组件/系统元素及职责
+| 组件 ID | 职责 | 输入/输出 | 分配的 SYS | 已有/新增 | 来源路径/证据 |
+|---|---|---|---|---|---|
+| COMP-001 | 待确认 | 待确认 | SYS-001 | 未知 | 待检索 |
+
+## 接口契约
+| IF ID | 生产者 → 消费者 | 数据/单位/有效性 | 时序/顺序/错误语义 | 契约来源 | 状态 |
+|---|---|---|---|---|---|
+| IF-001 | 待确认 | 待确认 | 待确认 | 待检索 | unresolved |
+
+## 状态、序列、并发与生命周期
+
+## 平台/资源/安全/网络安全/诊断等质量属性
+
+## 架构决策记录（ADR）与待解决问题
+
+## 需求分配检查
+每条系统需求必须分配到架构元素/接口，或给出经评审的“不适用”理由。
