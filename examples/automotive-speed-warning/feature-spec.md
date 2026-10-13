@@ -15,3 +15,17 @@
 
 ## Open decisions
 Exceedance equality/hysteresis, debounce/filtering, onset/clear timing, warning priority, HMI signal names, failure handling, and safety classification.
+
+
+## Completeness review
+| dimension | applicability | FR / AC IDs | rationale / evidence | review record |
+|---|---|---|---|---|
+| normal | applicable | FR-001 / AC-001 | Illustrative happy path only | EXAMPLE-ONLY |
+| boundary | unresolved |  | Equality and hysteresis not defined |  |
+| invalid-input | unresolved |  | Signal validity not defined |  |
+| state-transition | unresolved |  |  |  |
+| failure | unresolved |  | Failure behavior is not supplied |  |
+| recovery | unresolved |  |  |  |
+| timing-performance | unresolved |  | Timing not supplied |  |
+| interface-semantics | unresolved |  | Signal/interface names not supplied |  |
+| safety-security-diagnostics | unresolved |  | Classification and diagnostics not supplied |  |
