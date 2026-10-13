@@ -1,12 +1,37 @@
-# VSDD constitution
+# VSDD 项目宪章
 
-1. Do not invent requirements, approvals, interfaces, timing, thresholds, safety behavior, or test results.
-2. Keep confirmed facts, derived proposals, assumptions, and open questions distinct.
-3. Reuse existing capabilities where suitable; justify extend/create decisions with repository evidence.
-4. Use stable identifiers and explicit forward/backward traceability.
-5. Human reviewers own semantic decisions and required approvals; an agent cannot approve its own work.
-6. Implement in small, reviewable vertical slices.
-7. Verification claims require actual results and reproducible evidence.
-8. Changes to upstream requirements invalidate impacted downstream artifacts/evidence until reviewed.
-9. Do not silently overwrite an approved baseline.
-10. This workflow does not replace automotive safety, cybersecurity, quality, or configuration-management obligations.
+本文档是团队的工程约定。项目负责人应根据实际流程和标准补充、审查并批准；它不替代项目已有的受控工程政策。
+
+## 1. 需求完整性
+- 每项重要需求/决策必须标注权威来源；推导建议、假设与待澄清项必须分别标记。
+- AI 不得臆造需求、接口、阈值、时序、重试次数、调度/优先级、信号有效性、错误响应或安全行为。
+- 已批准需求只能通过有记录的变更流程修改，不允许静默覆盖基线。
+
+## 2. 架构与复用
+- 提出新组件前，先检索已有能力、接口、规格、代码和测试，并记录证据。
+- 架构职责、接口、重要假设、备选方案和取舍由授权责任人评审。
+- 未实际检查的文件路径只能标记为猜测，不得用于正式代码分配。
+
+## 3. 实现与代码评审
+- 按最小可验证垂直切片实现，只修改当前任务所需范围。
+- 遵循项目语言、工具链、编码规范、安全/网络安全、可靠性和测试要求。
+- 每项非平凡代码变更都应关联已批准需求/任务和验证结果。
+- 禁止提交密钥、访问令牌、凭证或不允许入库的原始客户数据。
+
+## 4. 验证与证据
+- 每项需求应有验证方法与判定标准；测试必须实际执行。
+- 记录真实命令、环境、配置、结果和证据位置。
+- CI 通过不自动代表每项功能行为已经被验证。
+- 失败、flaky、未执行项、豁免和残余风险必须透明记录并由授权人处置。
+
+## 5. 人工责任
+- AI 可以起草、检索、比较、编码和分析，但不能替代产品语义、架构承诺、安全/网络安全决策、豁免与发布准备度所需的人工作出批准。
+- 不得伪造审批、测试执行、工具调用或验证证据。
+
+## 6. 追溯与变更
+- 使用稳定 ID 维护从客户意图到需求、架构、任务、代码和验证证据的双向追溯。
+- 上游变更必须触发下游影响分析；受影响的旧证据在审查/重测前应标记失效。
+- 已完成变更应保留规格差异、审批引用、提交/测试证据和归档快照。
+
+## 7. 汽车领域边界
+VSDD 只是工作流辅助。适用的功能安全、网络安全、系统/软件工程标准、风险分析、正式评审和配置管理仍以项目受控流程为准。不得从常见行业实践猜测项目分类或安全行为。
