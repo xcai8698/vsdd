@@ -117,5 +117,14 @@ class VSDDCLITests(unittest.TestCase):
             self.assertNotEqual(result.returncode, 0)
             self.assertIn("missing outgoing trace to SWE-*", result.stdout)
 
+    def test_trace_traverses_bidirectionally(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            self.prepare_planned_feature(Path(tmp))
+            result = self.run_cli("trace", "trace-demo", "--id", "FB-001", "--root", tmp)
+            self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+            self.assertIn("FB-001 --decomposes-into", result.stdout)
+            self.assertIn("SWE-001 --verified-by", result.stdout)
+            self.assertIn("direction=both", result.stdout)
+
 if __name__ == "__main__":
     unittest.main()
