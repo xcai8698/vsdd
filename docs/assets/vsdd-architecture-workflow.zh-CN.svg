@@ -1,0 +1,123 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1440" height="960" viewBox="0 0 1440 960" role="img" aria-labelledby="title desc">
+<title id="title">VSDD architecture and iterative workflow</title>
+<desc id="desc">A five-stage workflow connects product intent, feature specification and capability reuse, system architecture, software planning and implementation, and verification and convergence. Traceability, shared capability catalog, human approval gates, and change-impact feedback run across the process.</desc>
+<defs>
+ <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#f8fbff"/><stop offset="1" stop-color="#f5f2ff"/></linearGradient>
+ <linearGradient id="head" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#1769aa"/><stop offset="1" stop-color="#6956c8"/></linearGradient>
+ <marker id="arrow" markerWidth="10" markerHeight="10" refX="7" refY="5" orient="auto"><path d="M0,0 L10,5 L0,10 Z" fill="#7868c8"/></marker>
+ <marker id="redarrow" markerWidth="10" markerHeight="10" refX="7" refY="5" orient="auto"><path d="M0,0 L10,5 L0,10 Z" fill="#bf4050"/></marker>
+ <style>
+ .title{font:800 34px 'Inter','Arial',sans-serif;fill:#15243a}.subtitle{font:16px 'Inter','Arial',sans-serif;fill:#526179}
+ .cardTitle{font:800 19px 'Inter','Arial',sans-serif;fill:#172b4d}.body{font:14px 'Inter','Arial',sans-serif;fill:#45536b}.small{font:12px 'Inter','Arial',sans-serif;fill:#617087}.num{font:800 13px 'Inter','Arial',sans-serif;fill:#fff}
+ .bandTitle{font:800 17px 'Inter','Arial',sans-serif;fill:#192a44}.bandBody{font:13px 'Inter','Arial',sans-serif;fill:#4f5f75}.pill{font:700 12px 'Inter','Arial',sans-serif;fill:#51429c}
+ </style>
+</defs>
+<rect width="1440" height="960" rx="22" fill="url(#bg)"/>
+<rect x="0" y="0" width="1440" height="9" fill="url(#head)"/>
+<text x="48" y="62" class="title">VSDD｜可验证的规格驱动开发</text>
+<text x="48" y="94" class="subtitle">从产品意图到已验证软件的变更驱动闭环：每一步都有决策依据和验证证据。</text>
+
+<!-- Stage cards -->
+<g>
+ <rect x="40" y="132" width="250" height="272" rx="18" fill="#fff" stroke="#cddff4" stroke-width="1.5"/>
+ <rect x="40" y="132" width="250" height="9" rx="5" fill="#1769aa"/>
+ <circle cx="67" cy="170" r="15" fill="#1769aa"/><text x="67" y="175" text-anchor="middle" class="num">01</text>
+ <text x="91" y="176" class="cardTitle">探索与澄清</text>
+ <text x="60" y="216" class="body"><tspan x="60" dy="0">明确目标、范围、参与者、</tspan><tspan x="60" dy="22">约束和未知项。</tspan></text>
+ <line x1="60" y1="270" x2="270" y2="270" stroke="#e2eaf4"/>
+ <text x="60" y="297" class="small">主要工件</text>
+ <text x="60" y="320" class="body"><tspan x="60" dy="0">Feature 简报</tspan><tspan x="60" dy="22">来源清单 · 待澄清问题</tspan></text>
+ <rect x="60" y="367" width="125" height="24" rx="12" fill="#eaf4ff"/><text x="122.5" y="383" text-anchor="middle" class="pill">需求探索</text>
+
+ <rect x="325" y="132" width="250" height="272" rx="18" fill="#fff" stroke="#d7cef8" stroke-width="1.5"/>
+ <rect x="325" y="132" width="250" height="9" rx="5" fill="#6956c8"/>
+ <circle cx="352" cy="170" r="15" fill="#6956c8"/><text x="352" y="175" text-anchor="middle" class="num">02</text>
+ <text x="376" y="176" class="cardTitle">规格与能力复用</text>
+ <text x="345" y="216" class="body"><tspan x="345" dy="0">把行为变成可验证规格；</tspan><tspan x="345" dy="22">实现前先检索现有能力。</tspan></text>
+ <line x1="345" y1="270" x2="555" y2="270" stroke="#e6e0fa"/>
+ <text x="345" y="297" class="small">Artifacts</text>
+ <text x="345" y="320" class="body"><tspan x="345" dy="0">Feature Spec · 验收标准</tspan><tspan x="345" dy="22">Capability/复用映射</tspan></text>
+ <rect x="345" y="367" width="132" height="24" rx="12" fill="#f1edff"/><text x="411" y="383" text-anchor="middle" class="pill">规格化 + 复用</text>
+
+ <rect x="610" y="132" width="250" height="272" rx="18" fill="#fff" stroke="#d7cef8" stroke-width="1.5"/>
+ <rect x="610" y="132" width="250" height="9" rx="5" fill="#6956c8"/>
+ <circle cx="637" cy="170" r="15" fill="#6956c8"/><text x="637" y="175" text-anchor="middle" class="num">03</text>
+ <text x="661" y="176" class="cardTitle">系统架构</text>
+ <text x="630" y="216" class="body"><tspan x="630" dy="0">推导系统需求；</tspan><tspan x="630" dy="22">分配职责并定义接口。</tspan></text>
+ <line x1="630" y1="270" x2="840" y2="270" stroke="#e6e0fa"/>
+ <text x="630" y="297" class="small">Artifacts</text>
+ <text x="630" y="320" class="body"><tspan x="630" dy="0">系统需求 · 架构决策</tspan><tspan x="630" dy="22">组件 · 接口契约</tspan></text>
+ <rect x="630" y="367" width="164" height="24" rx="12" fill="#f1edff"/><text x="712" y="383" text-anchor="middle" class="pill">架构 + 分配</text>
+
+ <rect x="895" y="132" width="250" height="272" rx="18" fill="#fff" stroke="#cddff4" stroke-width="1.5"/>
+ <rect x="895" y="132" width="250" height="9" rx="5" fill="#1769aa"/>
+ <circle cx="922" cy="170" r="15" fill="#1769aa"/><text x="922" y="175" text-anchor="middle" class="num">04</text>
+ <text x="946" y="176" class="cardTitle">软件需求与代码</text>
+ <text x="915" y="216" class="body"><tspan x="915" dy="0">推导软件需求与任务；</tspan><tspan x="915" dy="22">以小型垂直切片实现。</tspan></text>
+ <line x1="915" y1="270" x2="1125" y2="270" stroke="#e2eaf4"/>
+ <text x="915" y="297" class="small">Artifacts</text>
+ <text x="915" y="320" class="body"><tspan x="915" dy="0">Software Spec · 任务计划</tspan><tspan x="915" dy="22">代码差异 · 测试</tspan></text>
+ <rect x="915" y="367" width="162" height="24" rx="12" fill="#eaf4ff"/><text x="996" y="383" text-anchor="middle" class="pill">规划 + 实现</text>
+
+ <rect x="1180" y="132" width="220" height="272" rx="18" fill="#fff" stroke="#e8c3c7" stroke-width="1.5"/>
+ <rect x="1180" y="132" width="220" height="9" rx="5" fill="#bf4050"/>
+ <circle cx="1207" cy="170" r="15" fill="#bf4050"/><text x="1207" y="175" text-anchor="middle" class="num">05</text>
+ <text x="1231" y="176" class="cardTitle">验证与收敛</text>
+ <text x="1200" y="216" class="body"><tspan x="1200" dy="0">执行检查；比较需求意图</tspan><tspan x="1200" dy="22">与实际实现是否一致。</tspan></text>
+ <line x1="1200" y1="270" x2="1380" y2="270" stroke="#f2dfe1"/>
+ <text x="1200" y="297" class="small">Artifacts</text>
+ <text x="1200" y="320" class="body"><tspan x="1200" dy="0">测试证据</tspan><tspan x="1200" dy="22">差距 · 变更影响</tspan></text>
+ <rect x="1200" y="367" width="150" height="24" rx="12" fill="#fff0f1"/><text x="1275" y="383" text-anchor="middle" style="font:700 12px Inter,Arial;fill:#a12e3e">验证 + 收敛</text>
+</g>
+
+<!-- forward arrows -->
+<g fill="none" stroke="#8c7bd4" stroke-width="3" marker-end="url(#arrow)">
+ <path d="M292 260 H319"/><path d="M577 260 H604"/><path d="M862 260 H889"/><path d="M1147 260 H1174"/>
+</g>
+
+<!-- shared foundations -->
+<rect x="40" y="442" width="1360" height="206" rx="18" fill="#fff" stroke="#d9e1ec" stroke-width="1.4"/>
+<text x="65" y="476" class="bandTitle">共享工程底座——贯穿所有阶段</text>
+<g>
+ <rect x="65" y="497" width="305" height="78" rx="12" fill="#eaf4ff" stroke="#c9e1fb"/>
+ <text x="84" y="524" class="cardTitle" style="font-size:16px">版本化 Spec</text>
+ <text x="84" y="548" class="bandBody">来源 · 状态 · 稳定 ID · 变更记录</text>
+ <rect x="395" y="497" width="305" height="78" rx="12" fill="#f1edff" stroke="#d9d0fa"/>
+ <text x="414" y="524" class="cardTitle" style="font-size:16px">能力目录</text>
+ <text x="414" y="548" class="bandBody">复用证据 · 契约 · 责任人</text>
+ <rect x="725" y="497" width="305" height="78" rx="12" fill="#f1edff" stroke="#d9d0fa"/>
+ <text x="744" y="524" class="cardTitle" style="font-size:16px">架构与接口契约</text>
+ <text x="744" y="548" class="bandBody">职责分配 · 接口 · 架构决策</text>
+ <rect x="1055" y="497" width="320" height="78" rx="12" fill="#fff0f1" stroke="#f0d0d3"/>
+ <text x="1074" y="524" class="cardTitle" style="font-size:16px">双向追溯与证据</text>
+ <text x="1074" y="548" class="bandBody">需求 ↔ 代码 ↔ 实际执行的测试</text>
+</g>
+<text x="65" y="615" class="small">AI 负责起草、检索、比较和检查；工程师批准产品语义、架构承诺、偏差及发布准备度。</text>
+
+<!-- feedback loop -->
+<rect x="40" y="674" width="1360" height="210" rx="18" fill="#fff" stroke="#d9e1ec" stroke-width="1.4"/>
+<text x="65" y="709" class="bandTitle">迭代反馈闭环</text>
+<g>
+ <rect x="65" y="733" width="230" height="72" rx="11" fill="#fff0f1" stroke="#efc6cb"/>
+ <text x="180" y="760" text-anchor="middle" class="cardTitle" style="font-size:15px">差距 / 变更 / 测试失败</text>
+ <text x="180" y="782" text-anchor="middle" class="bandBody">记录具体证据</text>
+ <rect x="340" y="733" width="230" height="72" rx="11" fill="#f1edff" stroke="#d9d0fa"/>
+ <text x="455" y="760" text-anchor="middle" class="cardTitle" style="font-size:15px">定位责任工件</text>
+ <text x="455" y="782" text-anchor="middle" class="bandBody">需求意图、规格、设计、代码或测试</text>
+ <rect x="615" y="733" width="230" height="72" rx="11" fill="#f1edff" stroke="#d9d0fa"/>
+ <text x="730" y="760" text-anchor="middle" class="cardTitle" style="font-size:15px">影响分析</text>
+ <text x="730" y="782" text-anchor="middle" class="bandBody">标记下游关联项待评审</text>
+ <rect x="890" y="733" width="230" height="72" rx="11" fill="#eaf4ff" stroke="#c9e1fb"/>
+ <text x="1005" y="760" text-anchor="middle" class="cardTitle" style="font-size:15px">更新并重新验证</text>
+ <text x="1005" y="782" text-anchor="middle" class="bandBody">小步实现 + 证据</text>
+ <rect x="1165" y="733" width="210" height="72" rx="11" fill="#e8f7f1" stroke="#c9e9dd"/>
+ <text x="1270" y="760" text-anchor="middle" class="cardTitle" style="font-size:15px">收敛</text>
+ <text x="1270" y="782" text-anchor="middle" class="bandBody">无未处置的差距</text>
+</g>
+<g fill="none" stroke="#7868c8" stroke-width="2.5" marker-end="url(#arrow)">
+ <path d="M297 769 H334"/><path d="M572 769 H609"/><path d="M847 769 H884"/><path d="M1122 769 H1159"/>
+</g>
+<path d="M1270 809 C1270 856 180 856 180 811" fill="none" stroke="#bf4050" stroke-width="2" stroke-dasharray="7 6" marker-end="url(#redarrow)"/>
+<text x="720" y="853" text-anchor="middle" style="font:700 12px Inter,Arial;fill:#a12e3e">仍有差距时，回到对应责任工件；不能用下游补丁掩盖上游歧义。</text>
+<text x="40" y="924" class="small">VSDD 是工程流程辅助工具；项目适用的工程标准、安全/网络安全流程、评审及配置管理仍然具有优先效力。</text>
+</svg>
