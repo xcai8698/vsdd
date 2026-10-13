@@ -1,19 +1,19 @@
-# Feature brief: <FEATURE-NAME>
+# Feature 简报：<FEATURE-NAME>
 
-- Feature ID: FB-001
-- Source(s):
-- Status: proposed
+- Feature ID：FB-001
+- 来源：
+- 状态：proposed
 
-## Outcome
-Describe user/business value and how it will be observed.
+## 目标与价值
+描述要解决的问题、预期结果及其来源。
 
-## Scope
-- In scope:
-- Out of scope:
+## 范围
+- 范围内：
+- 非目标：
 
-## Constraints
-List source-backed constraints. Distinguish assumptions from confirmed facts.
+## 约束与依赖
+仅记录有来源的约束；区分已确认事实和假设。
 
-## Open questions
-| Question | Why it matters | Owner | Due date | Blocking? |
+## 待澄清问题
+| 问题 | 错误假设的影响 | 负责人 | 阻塞阶段 | 状态 |
 |---|---|---|---|---|
