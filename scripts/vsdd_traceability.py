@@ -32,6 +32,10 @@ def _list_ids(text, prefix):
     rx = re.compile(r"(?m)^\s*(?:[-*]\s*)?(?:#{1,6}\s*)?(" + re.escape(prefix) + r"-\d{3,})\s*(?:[:：|.)]|\s|$)")
     return set(rx.findall(text))
 
+def _list_id_rows(text, prefix):
+    rx = re.compile(r"(?m)^\s*(?:[-*]\s*)?(?:#{1,6}\s*)?(" + re.escape(prefix) + r"-\d{3,})\s*(?:[:：|.)]|\s|$)")
+    return [(m.group(1), text.count("\n", 0, m.start()) + 1, []) for m in rx.finditer(text)]
+
 def _ok(value):
     value = (value or "").strip()
     return bool(value) and not PLACEHOLDER.search(value)
@@ -114,9 +118,16 @@ def check_traceability(folder, project_root, stage):
     names = ("feature-brief.md", "source-register.md", "feature-spec.md", "system-requirements.md",
              "architecture.md", "software-requirements.md", "tasks.md", "verification.md")
     docs = {n: _read(folder, n) for n in names}
-    fb = set(re.findall(r"(?im)^\s*-\s*Feature ID[：:]\s*(FB-\d{3,})\s*$", docs["feature-brief.md"]))
+    fb_matches = re.findall(r"(?im)^\s*-\s*Feature ID[：:]\s*(FB-\d{3,})\s*$", docs["feature-brief.md"])
+    fb = set(fb_matches)
+    if len(fb_matches) > 1:
+        blockers.append("feature-brief.md must declare exactly one FB ID")
     src = _sources(folder, blockers)
-    fr, ac = _list_ids(docs["feature-spec.md"], "FR"), _list_ids(docs["feature-spec.md"], "AC")
+    fr_rows = _list_id_rows(docs["feature-spec.md"], "FR")
+    ac_rows = _list_id_rows(docs["feature-spec.md"], "AC")
+    _duplicates(fr_rows, "feature-spec.md FR", blockers)
+    _duplicates(ac_rows, "feature-spec.md AC", blockers)
+    fr, ac = {x[0] for x in fr_rows}, {x[0] for x in ac_rows}
     sys_rows, arch_rows = _table_ids(docs["system-requirements.md"], "SYS"), _table_ids(docs["architecture.md"], "ARCH")
     swe_rows, tc_rows = _table_ids(docs["software-requirements.md"], "SWE"), _table_ids(docs["verification.md"], "TC")
     task_rows = []
