@@ -1,22 +1,22 @@
 #!/usr/bin/env python3
 """VSDD workflow CLI; Python 3.10+, standard library only."""
-import argparse, csv, json, os, re, shutil, sys
-from vsdd_traceability import check_traceability, traceability_blockers
+import argparse, json, os, re, shutil, sys
+from vsdd_traceability import check_traceability, traceability_blockers, traverse_graph
 from datetime import datetime, timezone
 from pathlib import Path
 
-VERSION = "0.4.0"
+VERSION = "0.5.0"
 STAGES = ["intake", "capability-mapped", "specified", "architecture-ready", "planned", "implementing", "verifying", "converged", "archived"]
-ARTIFACTS = ["feature-brief.md","source-register.md","capability-map.md","feature-spec.md","system-requirements.md","architecture.md","software-requirements.md","tasks.md","traceability.csv","verification.md","change-record.md","adr.md"]
+ARTIFACTS = ["feature-brief.md","source-register.md","capability-map.md","feature-spec.md","system-requirements.md","architecture.md","software-requirements.md","tasks.md","traceability.json","verification.md","change-record.md","adr.md"]
 REQUIRED = {
  "intake":["feature-brief.md"],
  "capability-mapped":["feature-brief.md","capability-map.md"],
- "specified":["feature-brief.md","source-register.md","capability-map.md","feature-spec.md"],
- "architecture-ready":["feature-brief.md","source-register.md","capability-map.md","feature-spec.md","system-requirements.md","architecture.md"],
- "planned":["feature-brief.md","source-register.md","capability-map.md","feature-spec.md","system-requirements.md","architecture.md","software-requirements.md","tasks.md","traceability.csv"],
- "implementing":["feature-brief.md","source-register.md","capability-map.md","feature-spec.md","system-requirements.md","architecture.md","software-requirements.md","tasks.md","traceability.csv"],
- "verifying":["feature-brief.md","source-register.md","capability-map.md","feature-spec.md","system-requirements.md","architecture.md","software-requirements.md","tasks.md","traceability.csv","verification.md"],
- "converged":["feature-brief.md","source-register.md","capability-map.md","feature-spec.md","system-requirements.md","architecture.md","software-requirements.md","tasks.md","traceability.csv","verification.md","change-record.md"],
+ "specified":["feature-brief.md","source-register.md","capability-map.md","feature-spec.md","traceability.json"],
+ "architecture-ready":["feature-brief.md","source-register.md","capability-map.md","feature-spec.md","traceability.json","system-requirements.md","architecture.md"],
+ "planned":["feature-brief.md","source-register.md","capability-map.md","feature-spec.md","traceability.json","system-requirements.md","architecture.md","software-requirements.md","tasks.md"],
+ "implementing":["feature-brief.md","source-register.md","capability-map.md","feature-spec.md","traceability.json","system-requirements.md","architecture.md","software-requirements.md","tasks.md"],
+ "verifying":["feature-brief.md","source-register.md","capability-map.md","feature-spec.md","traceability.json","system-requirements.md","architecture.md","software-requirements.md","tasks.md","verification.md"],
+ "converged":["feature-brief.md","source-register.md","capability-map.md","feature-spec.md","traceability.json","system-requirements.md","architecture.md","software-requirements.md","tasks.md","verification.md","change-record.md"],
  "archived":["change-record.md","verification.md"]}
 MARKERS = ["UNRESOLVED","[NEEDS CLARIFICATION]","{{","TODO: APPROVAL REQUIRED"]
 TEMPLATE = {
