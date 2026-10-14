@@ -6,7 +6,7 @@
       "id": "FB-001",
       "type": "feature",
       "title": "Speed warning",
-      "artifact": "examples/automotive-speed-warning/feature-brief.md",
+      "artifact": "feature-brief.md",
       "anchor": "FB-001",
       "status": "proposed"
     },
@@ -14,7 +14,7 @@
       "id": "SRC-001",
       "type": "source",
       "title": "Configurable speed limit (km/h)",
-      "artifact": "examples/automotive-speed-warning/source-register.md",
+      "artifact": "source-register.md",
       "anchor": "SRC-001",
       "scope": "in-scope",
       "status": "proposed"
@@ -23,7 +23,7 @@
       "id": "SRC-002",
       "type": "source",
       "title": "Audible and visual warning on exceedance",
-      "artifact": "examples/automotive-speed-warning/source-register.md",
+      "artifact": "source-register.md",
       "anchor": "SRC-002",
       "scope": "in-scope",
       "status": "proposed"
@@ -32,7 +32,7 @@
       "id": "FR-001",
       "type": "feature-requirement",
       "title": "Configured speed limit warning",
-      "artifact": "examples/automotive-speed-warning/feature-spec.md",
+      "artifact": "feature-spec.md",
       "anchor": "FR-001",
       "status": "proposed"
     },
@@ -40,7 +40,7 @@
       "id": "AC-001",
       "type": "acceptance-criterion",
       "title": "Verify approved exceedance behavior",
-      "artifact": "examples/automotive-speed-warning/feature-spec.md",
+      "artifact": "feature-spec.md",
       "anchor": "AC-001",
       "status": "proposed"
     },
@@ -48,7 +48,7 @@
       "id": "SYS-001",
       "type": "system-requirement",
       "title": "Evaluate approved overspeed condition",
-      "artifact": "examples/automotive-speed-warning/system-requirements.md",
+      "artifact": "system-requirements.md",
       "anchor": "SYS-001",
       "status": "blocked"
     },
@@ -56,7 +56,7 @@
       "id": "SYS-002",
       "type": "system-requirement",
       "title": "Request approved audible and visual outputs",
-      "artifact": "examples/automotive-speed-warning/system-requirements.md",
+      "artifact": "system-requirements.md",
       "anchor": "SYS-002",
       "status": "blocked"
     },
@@ -64,7 +64,7 @@
       "id": "ARCH-001",
       "type": "architecture-element",
       "title": "Overspeed condition evaluation",
-      "artifact": "examples/automotive-speed-warning/architecture.md",
+      "artifact": "architecture.md",
       "anchor": "ARCH-001",
       "status": "proposed"
     },
@@ -72,7 +72,7 @@
       "id": "ARCH-002",
       "type": "architecture-element",
       "title": "Audible/visual output boundary",
-      "artifact": "examples/automotive-speed-warning/architecture.md",
+      "artifact": "architecture.md",
       "anchor": "ARCH-002",
       "status": "proposed"
     },
@@ -80,7 +80,7 @@
       "id": "SWE-001",
       "type": "software-requirement",
       "title": "Implement approved exceedance condition",
-      "artifact": "examples/automotive-speed-warning/software-requirements.md",
+      "artifact": "software-requirements.md",
       "anchor": "SWE-001",
       "status": "blocked"
     },
@@ -88,7 +88,7 @@
       "id": "SWE-002",
       "type": "software-requirement",
       "title": "Issue approved output requests",
-      "artifact": "examples/automotive-speed-warning/software-requirements.md",
+      "artifact": "software-requirements.md",
       "anchor": "SWE-002",
       "status": "blocked"
     },
@@ -96,7 +96,7 @@
       "id": "T-004",
       "type": "task",
       "title": "Implement approved vertical slice",
-      "artifact": "examples/automotive-speed-warning/tasks.md",
+      "artifact": "tasks.md",
       "anchor": "T-004",
       "status": "proposed"
     },
@@ -104,7 +104,7 @@
       "id": "T-005",
       "type": "task",
       "title": "Add and execute tests",
-      "artifact": "examples/automotive-speed-warning/tasks.md",
+      "artifact": "tasks.md",
       "anchor": "T-005",
       "status": "proposed"
     },
@@ -112,7 +112,7 @@
       "id": "TC-001",
       "type": "test-case",
       "title": "Verify overspeed condition",
-      "artifact": "examples/automotive-speed-warning/verification.md",
+      "artifact": "verification.md",
       "anchor": "TC-001",
       "status": "blocked"
     },
@@ -120,7 +120,7 @@
       "id": "TC-002",
       "type": "test-case",
       "title": "Verify audible/visual requests",
-      "artifact": "examples/automotive-speed-warning/verification.md",
+      "artifact": "verification.md",
       "anchor": "TC-002",
       "status": "blocked"
     }
@@ -134,7 +134,7 @@
       "status": "proposed",
       "evidence": [
         {
-          "artifact": "examples/automotive-speed-warning/source-register.md",
+          "artifact": "source-register.md",
           "anchor": "SRC-001",
           "note": "Speed-limit configuration intent from the example source register."
         }
@@ -148,7 +148,7 @@
       "status": "proposed",
       "evidence": [
         {
-          "artifact": "examples/automotive-speed-warning/source-register.md",
+          "artifact": "source-register.md",
           "anchor": "SRC-002",
           "note": "Audible/visual warning intent; detailed behavior is deliberately unresolved."
         }
@@ -162,7 +162,7 @@
       "status": "proposed",
       "evidence": [
         {
-          "artifact": "examples/automotive-speed-warning/feature-brief.md",
+          "artifact": "feature-brief.md",
           "anchor": "FB-001",
           "note": "Feature intent decomposed into the observable warning scenario."
         }
@@ -176,7 +176,7 @@
       "status": "proposed",
       "evidence": [
         {
-          "artifact": "examples/automotive-speed-warning/feature-spec.md",
+          "artifact": "feature-spec.md",
           "anchor": "AC-001",
           "note": "Acceptance criterion attached to FR-001."
         }
@@ -190,7 +190,7 @@
       "status": "proposed",
       "evidence": [
         {
-          "artifact": "examples/automotive-speed-warning/system-requirements.md",
+          "artifact": "system-requirements.md",
           "anchor": "SYS-001",
           "note": "System requirement proposed from the feature acceptance criterion."
         }
@@ -204,7 +204,7 @@
       "status": "proposed",
       "evidence": [
         {
-          "artifact": "examples/automotive-speed-warning/system-requirements.md",
+          "artifact": "system-requirements.md",
           "anchor": "SYS-002",
           "note": "System requirement proposed from the feature acceptance criterion."
         }
@@ -218,7 +218,7 @@
       "status": "proposed",
       "evidence": [
         {
-          "artifact": "examples/automotive-speed-warning/architecture.md",
+          "artifact": "architecture.md",
           "anchor": "ARCH-001",
           "note": "Illustrative allocation; component ownership awaits project evidence."
         }
@@ -232,7 +232,7 @@
       "status": "proposed",
       "evidence": [
         {
-          "artifact": "examples/automotive-speed-warning/architecture.md",
+          "artifact": "architecture.md",
           "anchor": "ARCH-002",
           "note": "Illustrative allocation; interface contract awaits project evidence."
         }
@@ -246,7 +246,7 @@
       "status": "proposed",
       "evidence": [
         {
-          "artifact": "examples/automotive-speed-warning/software-requirements.md",
+          "artifact": "software-requirements.md",
           "anchor": "SWE-001",
           "note": "Illustrative software allocation; blocked on product decisions."
         }
@@ -260,7 +260,7 @@
       "status": "proposed",
       "evidence": [
         {
-          "artifact": "examples/automotive-speed-warning/software-requirements.md",
+          "artifact": "software-requirements.md",
           "anchor": "SWE-002",
           "note": "Illustrative software allocation; blocked on interface confirmation."
         }
@@ -274,7 +274,7 @@
       "status": "proposed",
       "evidence": [
         {
-          "artifact": "examples/automotive-speed-warning/tasks.md",
+          "artifact": "tasks.md",
           "anchor": "T-004",
           "note": "Planned task; implementation has not been performed."
         }
@@ -288,7 +288,7 @@
       "status": "proposed",
       "evidence": [
         {
-          "artifact": "examples/automotive-speed-warning/tasks.md",
+          "artifact": "tasks.md",
           "anchor": "T-005",
           "note": "Planned task; implementation/testing evidence does not yet exist."
         }
@@ -302,7 +302,7 @@
       "status": "proposed",
       "evidence": [
         {
-          "artifact": "examples/automotive-speed-warning/verification.md",
+          "artifact": "verification.md",
           "anchor": "TC-001",
           "note": "Planned test; not executed."
         }
@@ -316,7 +316,7 @@
       "status": "proposed",
       "evidence": [
         {
-          "artifact": "examples/automotive-speed-warning/verification.md",
+          "artifact": "verification.md",
           "anchor": "TC-002",
           "note": "Planned test; not executed."
         }
