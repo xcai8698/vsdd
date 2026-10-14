@@ -1,0 +1,183 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "VSDD Traceability Graph",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "changeId",
+    "nodes",
+    "edges"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "const": "1.0"
+    },
+    "changeId": {
+      "type": "string",
+      "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+    },
+    "nodes": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/node"
+      }
+    },
+    "edges": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/edge"
+      }
+    }
+  },
+  "$defs": {
+    "node": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "type",
+        "title",
+        "artifact",
+        "anchor"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^(FB|SRC|FR|AC|SYS|ARCH|SWE|T|TC)-[0-9]{3,}$|^FILE:[A-Za-z0-9._/-]+$"
+        },
+        "type": {
+          "enum": [
+            "feature",
+            "source",
+            "feature-requirement",
+            "acceptance-criterion",
+            "system-requirement",
+            "architecture-element",
+            "software-requirement",
+            "task",
+            "code-file",
+            "test-case"
+          ]
+        },
+        "title": {
+          "type": "string",
+          "minLength": 1
+        },
+        "description": {
+          "type": "string"
+        },
+        "artifact": {
+          "type": "string",
+          "minLength": 1
+        },
+        "anchor": {
+          "type": "string",
+          "minLength": 1
+        },
+        "path": {
+          "type": "string"
+        },
+        "scope": {
+          "enum": [
+            "in-scope",
+            "out-of-scope",
+            "deferred"
+          ]
+        },
+        "status": {
+          "enum": [
+            "proposed",
+            "approved",
+            "implemented",
+            "verified",
+            "blocked",
+            "waived",
+            "invalidated"
+          ]
+        }
+      }
+    },
+    "edge": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "source",
+        "target",
+        "type",
+        "status",
+        "evidence"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^TR-[0-9]{3,}$"
+        },
+        "source": {
+          "type": "string",
+          "minLength": 1
+        },
+        "target": {
+          "type": "string",
+          "minLength": 1
+        },
+        "type": {
+          "enum": [
+            "derives",
+            "covers",
+            "decomposes-into",
+            "contains",
+            "has-acceptance-criteria",
+            "constrains",
+            "satisfied-by",
+            "allocated-to",
+            "implemented-by",
+            "verified-by",
+            "tested-by",
+            "modifies",
+            "implemented-in",
+            "depends-on",
+            "refines",
+            "references",
+            "supersedes"
+          ]
+        },
+        "status": {
+          "enum": [
+            "proposed",
+            "confirmed",
+            "verified",
+            "blocked",
+            "invalidated",
+            "waived"
+          ]
+        },
+        "evidence": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "artifact",
+              "note"
+            ],
+            "properties": {
+              "artifact": {
+                "type": "string",
+                "minLength": 1
+              },
+              "anchor": {
+                "type": "string"
+              },
+              "note": {
+                "type": "string",
+                "minLength": 1
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
