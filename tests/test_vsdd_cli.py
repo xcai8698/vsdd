@@ -83,7 +83,7 @@ class VSDDCLITests(unittest.TestCase):
 
         def node(id, type, title, artifact, **kwargs):
             return {"id": id, "type": type, "title": title, "artifact": artifact, "anchor": id, **kwargs}
-        base = ".vsdd/changes/trace-demo/"
+        base = ""
         nodes = [
             node("FB-001", "feature", "Display status", base+"feature-brief.md"),
             node("SRC-001", "source", "User requests a status display", base+"source-register.md", scope="in-scope"),
