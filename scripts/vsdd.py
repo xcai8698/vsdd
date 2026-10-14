@@ -28,6 +28,7 @@ TEMPLATE = {
 "architecture.md":"# Architecture: {name}\n\n## Context and constraints\n## Components and responsibilities\n## Interfaces and data flow\n## Allocation\n| System requirement | Component/interface | Rationale |\n|---|---|---|\n## Risks and alternatives\n",
 "software-requirements.md":"# Software requirements: {name}\n\n| ID | Software requirement (shall) | Allocated SYS ID | Component | Verification | Status |\n|---|---|---|---|---|---|\n| SWE-001 | <testable software behavior> | SYS-001 | <component> | TC-001 | proposed |\n",
 "tasks.md":"# Tasks: {name}\n\n- [ ] T-001 Implement <small vertical slice>; requirement: SWE-001; code path hypothesis: <inspect repository>; test: TC-001.\n",
+"traceability.json":"{\n  \"schemaVersion\": \"1.0\",\n  \"changeId\": \"<CHANGE_ID>\",\n  \"nodes\": [],\n  \"edges\": []\n}\n",
 "verification.md":"# Verification: {name}\n\n| Test/evidence ID | Requirement/AC | Environment/configuration | Command/procedure | Actual result | Pass/fail/block | Evidence link |\n|---|---|---|---|---|---|---|\n",
 "change-record.md":"# Change record: {name}\n\n## Summary\n## Decisions and approvals (reference real records; never invent)\n## Changed artifacts/code\n## Verification evidence\n## Remaining gaps and disposition\n",
 "adr.md":"# ADR: <decision title>\n\n- Status: proposed / accepted / rejected / superseded\n- Context and source: \n- Decision: \n- Alternatives and trade-offs: \n- Consequences: \n",
@@ -110,8 +111,8 @@ def new(args):
  for n,t in TEMPLATE.items():
   project_template = template_dir/n
   if project_template.exists(): t = project_template.read_text(encoding="utf-8")
-  (f/n).write_text(t.replace("{name}",s.replace("-"," ").title()).replace("<FEATURE-NAME>",s.replace("-"," ").title()),encoding="utf-8")
- (f/"traceability.csv").write_text("source_id,target_id,relationship,status,evidence\n",encoding="utf-8")
+  rendered = t.replace("{name}",s.replace("-"," ").title()).replace("<FEATURE-NAME>",s.replace("-"," ").title()).replace("<CHANGE_ID>",s)
+  (f/n).write_text(rendered,encoding="utf-8")
  (f/"state.json").write_text(json.dumps({"schema_version":"1.0","change_id":s,"stage":"intake","created_at":now(),"updated_at":now(),"owner":"unassigned","approvals":{},"notes":["Scaffold only; no approval or verification is implied."]},indent=2)+"\n",encoding="utf-8")
  print(f"[OK] Created {f}"); return 0
 def active(r):
@@ -129,10 +130,6 @@ def validate_folder(f,stage=None):
   text=p.read_text(encoding="utf-8")
   if not text.strip(): blockers.append(f"empty artifact: {n}")
   if st!="archived" and any(m in text for m in MARKERS): blockers.append(f"placeholder/unresolved marker in {n}")
- if (f/"traceability.csv").exists() and st in ["planned","implementing","verifying","converged"]:
-  with (f/"traceability.csv").open(newline="",encoding="utf-8-sig") as h:
-   for i,row in enumerate(csv.DictReader(h),2):
-    if not row.get("source_id") or not row.get("target_id") or not row.get("relationship"): blockers.append(f"traceability.csv:{i}: source_id, target_id, and relationship are required")
  if st in ["specified","architecture-ready","planned","implementing","verifying","converged"]:
   blockers.extend(traceability_blockers(f, f.parents[2], st))
  return sorted(set(blockers))
@@ -143,10 +140,12 @@ def trace_check(args):
  except Exception as e: print(f"[ERROR] state.json: {e}"); return 2
  stage=args.stage or current
  blockers, summary=check_traceability(f,root(args),stage)
+ counts=summary.get("counts",{})
  print(f"{args.slug} traceability at {stage}: "+("PASS" if not blockers else "BLOCKED"))
- print("Declared IDs: "+", ".join(f"{key}={value}" for key,value in summary.get("counts",{}).items()))
- if "coverage" in summary: print("Coverage: "+", ".join(f"{key}={value}" for key,value in summary["coverage"].items()))
- if summary.get("note"): print("Note: "+summary["note"])
+ print("Graph: "+", ".join(f"{key}={value}" for key,value in counts.items()))
+ for identifier,state in summary.get("nodes",{}).items():
+  reasons="; ".join(summary.get("reasons",{}).get(identifier,[]))
+  print(f"  [{state.upper()}] {identifier}: {reasons}")
  for blocker in blockers: print("  - "+blocker)
  return int(bool(blockers))
 def status(args):
@@ -177,29 +176,16 @@ def advance(args):
  if gate: state.setdefault("approvals",{})[args.to]={"reference":args.approval,"recorded_at":now(),"recorded_by":args.recorded_by or "unspecified"}
  state["stage"]=args.to; save_state(f,state); print(f"[OK] {cur} -> {args.to}"); return 0
 def trace(args):
- f=root(args)/".vsdd/changes"/args.slug/"traceability.csv"
- if not f.is_file(): print(f"[ERROR] Missing traceability file: {f}"); return 2
- with f.open(newline="",encoding="utf-8-sig") as h:
-  edges=[{"source":(r.get("source_id") or "").strip(),"target":(r.get("target_id") or "").strip(),
-          "relationship":(r.get("relationship") or "").strip(),"status":(r.get("status") or "").strip(),
-          "evidence":(r.get("evidence") or "").strip()} for r in csv.DictReader(h)]
- seen_edges=set(); visited={args.id:0}; queue=[args.id]
- while queue:
-  node=queue.pop(0); depth=visited[node]
-  if args.depth and depth >= args.depth: continue
-  for e in edges:
-   next_node=None
-   if args.direction in ["both","upstream"] and e["target"]==node: next_node=e["source"]
-   if args.direction in ["both","downstream"] and e["source"]==node: next_node=e["target"]
-   if next_node is None: continue
-   key=(e["source"],e["target"],e["relationship"])
-   if key not in seen_edges:
-    print(f"{e['source']} --{e['relationship']}[{e['status']}]--> {e['target']} | {e['evidence']}")
-    seen_edges.add(key)
-   if next_node not in visited:
-    visited[next_node]=depth+1; queue.append(next_node)
- if not seen_edges: print(f"No traceability edges for {args.id}"); return 1
- print(f"Reached {len(visited)} node(s), traversed {len(seen_edges)} edge(s), direction={args.direction}.")
+ f=root(args)/".vsdd/changes"/args.slug
+ path=f/"traceability.json"
+ if not path.is_file(): print(f"[ERROR] Missing traceability graph: {path}"); return 2
+ try: graph=json.loads(path.read_text(encoding="utf-8-sig"))
+ except json.JSONDecodeError as e: print(f"[ERROR] Invalid traceability.json: {e}"); return 2
+ try: nodes,edges,visited=traverse_graph(graph,args.id,args.direction,args.depth)
+ except ValueError as e: print(f"[ERROR] {e}"); return 2
+ for edge in edges:
+  print(f"{edge.get('source')} --{edge.get('type')}[{edge.get('status')}]--> {edge.get('target')} | {edge.get('evidence',[])}")
+ print(f"Reached {len(visited)} node(s), traversed {len(edges)} edge(s), direction={args.direction}.")
  return 0
 def sync(args):
  f=root(args)/".vsdd/changes"/args.slug; state=load_state(f)
