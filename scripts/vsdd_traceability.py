@@ -125,11 +125,11 @@ def _declared_nodes(folder, project_root, change_id, blockers, stage):
     if len(feature_ids) > 1:
         blockers.append("feature-brief.md must declare exactly one FB ID")
     for identifier in feature_ids:
-        result[identifier] = {"type": "feature", "artifact": f".vsdd/changes/{change_id}/feature-brief.md", "anchor": identifier}
+        result[identifier] = {"type": "feature", "artifact": "feature-brief.md", "anchor": identifier}
 
     sources = _source_inventory(folder, blockers)
     for identifier, _disposition, _line in sources["entries"]:
-        result[identifier] = {"type": "source", "artifact": f".vsdd/changes/{change_id}/source-register.md", "anchor": identifier}
+        result[identifier] = {"type": "source", "artifact": "source-register.md", "anchor": identifier}
 
     level = LEVEL.get(stage, 0)
     for node_type, (filename, prefix) in paths.items():
@@ -150,7 +150,7 @@ def _declared_nodes(folder, project_root, change_id, blockers, stage):
         for identifier, _line, _cells0 in rows:
             result[identifier] = {
                 "type": node_type,
-                "artifact": f".vsdd/changes/{change_id}/{filename}",
+                "artifact": filename,
                 "anchor": identifier,
             }
 
@@ -163,7 +163,7 @@ def _declared_nodes(folder, project_root, change_id, blockers, stage):
     _duplicates(task_rows, "tasks.md", blockers)
     for identifier, _line, _ in task_rows:
         result[identifier] = {
-            "type": "task", "artifact": f".vsdd/changes/{change_id}/tasks.md", "anchor": identifier,
+            "type": "task", "artifact": "tasks.md", "anchor": identifier,
         }
     return result, sources
 
@@ -256,11 +256,10 @@ def audit_graph(graph, declared, folder, project_root, stage):
                 if relative.is_absolute() or ".." in relative.parts:
                     blockers.append(f"{identifier}: unsafe artifact path {artifact}")
                 elif artifact not in {
-                    ".vsdd/changes/" + folder.name + "/" + name
-                    for name in ("feature-brief.md","source-register.md","feature-spec.md","system-requirements.md",
-                                 "architecture.md","software-requirements.md","tasks.md","verification.md")
+                    "feature-brief.md","source-register.md","feature-spec.md","system-requirements.md",
+                    "architecture.md","software-requirements.md","tasks.md","verification.md"
                 }:
-                    blockers.append(f"{identifier}: artifact must point to a known change artifact: {artifact}")
+                    blockers.append(f"{identifier}: artifact must point to a known change artifact relative to the change folder: {artifact}")
         if identifier in declared:
             expected = declared[identifier]
             if expected["type"] != kind:
