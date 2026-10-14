@@ -307,14 +307,20 @@ def audit_graph(graph, declared, folder, project_root, stage):
             edge_issues[edge_id] = "broken"
             continue
         evidence = edge.get("evidence")
+        evidence_invalid = False
         if not isinstance(evidence, list):
             blockers.append(f"{edge_id}: evidence must be an array")
+            evidence_invalid = True
         elif LEVEL.get(stage, 0) >= LEVEL["specified"] and not evidence:
             blockers.append(f"{edge_id}: evidence[] must contain a source/rationale from specified onward")
+            evidence_invalid = True
         else:
             for ei, item in enumerate(evidence):
                 if not isinstance(item, dict) or not _ok(item.get("artifact")) or not _ok(item.get("note")):
                     blockers.append(f"{edge_id}: evidence[{ei}] must contain artifact and note")
+                    evidence_invalid = True
+        if evidence_invalid:
+            edge_issues[edge_id] = "incomplete"
         if not re.fullmatch(r"TR-\d{3,}", str(edge_id)) and not str(edge_id).startswith("edges["):
             blockers.append(f"{edge_id}: edge ID must use TR-xxx")
         if status not in {"proposed", "confirmed", "verified", "blocked", "invalidated", "waived"}:
@@ -349,7 +355,10 @@ def audit_graph(graph, declared, folder, project_root, stage):
         elif identifier in incomplete_edge_nodes:
             state = "incomplete"
             reasons.append("has a blocked, invalidated or unconfirmed-at-convergence edge")
-        elif node.get("type") == "source" and node.get("scope", "in-scope").lower() in OUT_SCOPE | DEFERRED:
+        elif node.get("status") in {"blocked", "invalidated"}:
+            state = "incomplete"
+            reasons.append("node lifecycle status is " + str(node.get("status")))
+        elif node.get("type") == "source" and str(node.get("scope", "in-scope")).lower() in OUT_SCOPE | DEFERRED:
             state = "excluded"
             reasons.append("source is explicitly out-of-scope or deferred")
         elif not outgoing.get(identifier) and not incoming.get(identifier):
@@ -415,7 +424,7 @@ def audit_graph(graph, declared, folder, project_root, stage):
         },
         "nodes": node_states,
         "reasons": node_reasons,
-        "edges": {key: ("broken" if key in edge_issues else "complete") for key in edge_by_id},
+        "edges": {key: edge_issues.get(key, "complete") for key in edge_by_id},
     }
     return sorted(set(blockers)), summary
 
