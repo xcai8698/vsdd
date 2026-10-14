@@ -155,7 +155,7 @@ def _declared_nodes(folder, project_root, change_id, blockers, stage):
             }
 
     tasks_text = _read(folder / "tasks.md") if level >= LEVEL["planned"] else ""
-    task_rows = []
+    task_rows = _table_ids(tasks_text, "T")
     for line_no, line in enumerate(tasks_text.splitlines(), 1):
         match = re.match(r"^\s*[-*]\s*\[[ xX]\]\s*(T-\d{3,})\b", line)
         if match:
@@ -314,21 +314,29 @@ def audit_graph(graph, declared, folder, project_root, stage):
             blockers.append(f"{edge_id}: evidence[] must contain a source/rationale from specified onward")
         else:
             for ei, item in enumerate(evidence):
-                if not isinstance(item, dict) or not _ok(item.get("artifact")):
-                    blockers.append(f"{edge_id}: evidence[{ei}] must reference an artifact")
+                if not isinstance(item, dict) or not _ok(item.get("artifact")) or not _ok(item.get("note")):
+                    blockers.append(f"{edge_id}: evidence[{ei}] must contain artifact and note")
+        if not re.fullmatch(r"TR-\d{3,}", str(edge_id)) and not str(edge_id).startswith("edges["):
+            blockers.append(f"{edge_id}: edge ID must use TR-xxx")
+        if status not in {"proposed", "confirmed", "verified", "blocked", "invalidated", "waived"}:
+            blockers.append(f"{edge_id}: unsupported edge status {status}")
+        if status in {"invalidated", "blocked"} or (LEVEL.get(stage,0) >= LEVEL["converged"] and status not in {"confirmed","verified","waived"}):
+            edge_issues[edge_id] = "incomplete"
         valid_edges.append({"id": edge_id, "source": source, "target": target, "type": relation, "status": status})
 
     outgoing, incoming = {}, {}
-    broken_nodes = set()
+    broken_nodes, incomplete_edge_nodes = set(), set()
     for edge in edges:
         if not isinstance(edge, dict):
             continue
         edge_id = edge.get("id") or f"edges[{edges.index(edge)}]"
-        if edge_issues.get(edge_id) == "broken":
+        issue = edge_issues.get(edge_id)
+        destination = broken_nodes if issue == "broken" else incomplete_edge_nodes if issue == "incomplete" else None
+        if destination is not None:
             if edge.get("source") in node_by_id:
-                broken_nodes.add(edge["source"])
+                destination.add(edge["source"])
             if edge.get("target") in node_by_id:
-                broken_nodes.add(edge["target"])
+                destination.add(edge["target"])
     for edge in valid_edges:
         outgoing.setdefault(edge["source"], []).append(edge)
         incoming.setdefault(edge["target"], []).append(edge)
@@ -339,6 +347,9 @@ def audit_graph(graph, declared, folder, project_root, stage):
         if identifier in broken_nodes:
             state = "broken"
             reasons.append("has a dangling or semantically invalid edge")
+        elif identifier in incomplete_edge_nodes:
+            state = "incomplete"
+            reasons.append("has a blocked, invalidated or unconfirmed-at-convergence edge")
         elif node.get("type") == "source" and node.get("scope", "in-scope").lower() in OUT_SCOPE | DEFERRED:
             state = "excluded"
             reasons.append("source is explicitly out-of-scope or deferred")
@@ -380,15 +391,15 @@ def audit_graph(graph, declared, folder, project_root, stage):
                 node_reasons[identifier] = ["missing verification record"]
                 continue
             line, cells = match
-            values = [_cell(cells, i) for i in range(2, 7)]
-            labels = ("environment/configuration", "command/procedure", "actual result", "status", "evidence")
+            values = [_cell(cells, i) for i in range(3, 9)]
+            labels = ("environment/configuration", "command/procedure", "expected criteria", "actual result", "status", "evidence")
             for value, label in zip(values, labels):
                 if not _ok(value):
                     blockers.append(f"verification.md:{line}: {identifier} has no {label}")
                     node_states[identifier] = "incomplete"
                     node_reasons.setdefault(identifier, []).append(f"missing {label}")
-            if LEVEL.get(stage,0) >= LEVEL["converged"] and values[3].lower().strip() not in PASS:
-                if not (values[3].lower().strip() in {"waived","豁免"} and "APPROVAL:" in values[4]):
+            if LEVEL.get(stage,0) >= LEVEL["converged"] and values[4].lower().strip() not in PASS:
+                if not (values[4].lower().strip() in {"waived","豁免"} and "APPROVAL:" in values[5]):
                     blockers.append(f"verification.md:{line}: {identifier} must pass or have an approved APPROVAL: waiver")
                     node_states[identifier] = "incomplete"
                     node_reasons.setdefault(identifier, []).append("verification not passed or formally waived")
