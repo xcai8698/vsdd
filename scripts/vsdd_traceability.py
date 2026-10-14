@@ -108,7 +108,7 @@ def _source_inventory(folder, blockers):
         "record": meta("Review record"),
     }
 
-def _declared_nodes(folder, project_root, change_id, blockers):
+def _declared_nodes(folder, project_root, change_id, blockers, stage):
     result = {}
     paths = {
         "feature": ("feature-brief.md", None),
@@ -131,8 +131,15 @@ def _declared_nodes(folder, project_root, change_id, blockers):
     for identifier, _disposition, _line in sources["entries"]:
         result[identifier] = {"type": "source", "artifact": f".vsdd/changes/{change_id}/source-register.md", "anchor": identifier}
 
+    level = LEVEL.get(stage, 0)
     for node_type, (filename, prefix) in paths.items():
         if node_type in {"feature", "source"}:
+            continue
+        if node_type in {"feature-requirement", "acceptance-criterion"} and level < LEVEL["specified"]:
+            continue
+        if node_type in {"system-requirement", "architecture-element"} and level < LEVEL["architecture-ready"]:
+            continue
+        if node_type in {"software-requirement", "test-case"} and level < LEVEL["planned"]:
             continue
         text = _read(folder / filename)
         if node_type in {"feature-requirement", "acceptance-criterion"}:
@@ -147,7 +154,7 @@ def _declared_nodes(folder, project_root, change_id, blockers):
                 "anchor": identifier,
             }
 
-    tasks_text = _read(folder / "tasks.md")
+    tasks_text = _read(folder / "tasks.md") if level >= LEVEL["planned"] else ""
     task_rows = []
     for line_no, line in enumerate(tasks_text.splitlines(), 1):
         match = re.match(r"^\s*[-*]\s*\[[ xX]\]\s*(T-\d{3,})\b", line)
@@ -412,10 +419,12 @@ def load_and_check(folder, project_root, stage):
     except (json.JSONDecodeError, OSError) as exc:
         return [f"traceability.json is not valid JSON: {exc}"], {"nodes": {}, "edges": {}, "counts": {}}
     change_id = folder.name
-    declared, sources = _declared_nodes(folder, project_root, change_id, blockers)
+    declared, sources = _declared_nodes(folder, project_root, change_id, blockers, stage)
+    if not isinstance(graph, dict):
+        return ["traceability.json root must be a JSON object"], {"nodes": {}, "edges": {}, "counts": {}}
     if graph.get("changeId") != change_id:
         blockers.append(f"traceability.json changeId must be {change_id}")
-    nodes = graph.get("nodes", []) if isinstance(graph, dict) else []
+    nodes = graph.get("nodes", [])
     if isinstance(nodes, list):
         for node in nodes:
             if isinstance(node, dict) and node.get("type") == "source":
