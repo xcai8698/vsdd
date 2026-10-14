@@ -66,7 +66,7 @@ def init(args):
     v = r / ".vsdd"
     for rel in ["specs/features", "specs/capabilities", "specs/system",
                 "specs/architecture", "specs/software", "specs/history",
-                "changes/archive", "templates"]:
+                "changes/archive", "templates", "schemas"]:
         (v / rel).mkdir(parents=True, exist_ok=True)
     (r / ".agents").mkdir(parents=True, exist_ok=True)
 
@@ -81,6 +81,10 @@ def init(args):
                                           overwrite=bool(getattr(args, "update_templates", False)))
     else:
         templates_count = 0
+
+    schema_source = bundle_root() / ".vsdd" / "schemas"
+    if schema_source.exists():
+        copy_tree_merge(schema_source, v / "schemas", overwrite=False)
 
     constitution = v / "constitution.md"
     source_constitution = bundle_root() / ".vsdd" / "constitution.md"
