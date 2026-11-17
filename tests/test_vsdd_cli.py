@@ -157,5 +157,45 @@ class VSDDCLITests(unittest.TestCase):
             self.assertIn("SWE-001 --verified-by", result.stdout)
             self.assertIn("direction=both", result.stdout)
 
+    def test_trace_check_detects_orphan_source_node(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            folder = self.prepare_planned_feature(Path(tmp))
+            source_register = folder / "source-register.md"
+            source_register.write_text(source_register.read_text() +
+                "| SRC-002 | PRD | prd.md v1 | A second in-scope statement | in-scope | Product Owner |\\n",
+                encoding="utf-8")
+            path = folder / "traceability.json"
+            graph = json.loads(path.read_text())
+            graph["nodes"].append({
+                "id":"SRC-002","type":"source","title":"Second source statement",
+                "artifact":"source-register.md","anchor":"SRC-002","scope":"in-scope","status":"proposed"
+            })
+            path.write_text(json.dumps(graph, indent=2), encoding="utf-8")
+            result = self.run_cli("trace-check", "trace-demo", "--root", tmp)
+            self.assertNotEqual(result.returncode, 0)
+            self.assertIn("[ORPHAN] SRC-002", result.stdout)
+
+    def test_trace_check_detects_missing_edge_evidence(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            folder = self.prepare_planned_feature(Path(tmp))
+            path = folder / "traceability.json"
+            graph = json.loads(path.read_text())
+            graph["edges"][0]["evidence"] = []
+            path.write_text(json.dumps(graph, indent=2), encoding="utf-8")
+            result = self.run_cli("trace-check", "trace-demo", "--root", tmp)
+            self.assertNotEqual(result.returncode, 0)
+            self.assertIn("evidence[] must contain", result.stdout)
+
+    def test_trace_check_detects_markdown_node_missing_from_graph(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            folder = self.prepare_planned_feature(Path(tmp))
+            path = folder / "traceability.json"
+            graph = json.loads(path.read_text())
+            graph["nodes"] = [n for n in graph["nodes"] if n["id"] != "AC-001"]
+            path.write_text(json.dumps(graph, indent=2), encoding="utf-8")
+            result = self.run_cli("trace-check", "trace-demo", "--root", tmp)
+            self.assertNotEqual(result.returncode, 0)
+            self.assertIn("AC-001: declared in Markdown but missing from traceability.json", result.stdout)
+
 if __name__ == "__main__":
     unittest.main()
