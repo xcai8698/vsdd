@@ -146,6 +146,6 @@ Static checks cannot establish semantic equivalence of natural-language statemen
 
 ## Visual traceability review
 
-Each change stores its canonical graph in `.vsdd/changes/<change-id>/traceability.json`. Open `tools/traceability-viewer.html` in a browser and load that JSON file to inspect the graph. Nodes are colored green when the current stage's required links are complete, amber when some expected links/evidence are missing, and red when isolated or connected by broken relations. Explicitly out-of-scope/deferred source items are gray.
+Each change stores its canonical graph in `.vsdd/changes/<change-id>/traceability.json`. Open the [Traceability Graph Viewer](tools/traceability-viewer.html) in a browser and load that JSON file to inspect the graph. Nodes are colored green when the current stage's required links are complete, amber when some expected links/evidence are missing, and red when isolated or connected by broken relations. Explicitly out-of-scope/deferred source items are gray.
 
 The viewer is a visual review surface; `vsdd trace-check <change-id>` remains the repository-aware gate because it cross-checks graph nodes against the source register and Markdown requirements.
