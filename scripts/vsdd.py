@@ -5,7 +5,7 @@ from vsdd_traceability import check_traceability, traceability_blockers, travers
 from datetime import datetime, timezone
 from pathlib import Path
 
-VERSION = "0.5.0"
+VERSION = "0.6.0"
 STAGES = ["intake", "capability-mapped", "specified", "architecture-ready", "planned", "implementing", "verifying", "converged", "archived"]
 ARTIFACTS = ["feature-brief.md","source-register.md","capability-map.md","feature-spec.md","system-requirements.md","architecture.md","software-requirements.md","tasks.md","traceability.json","verification.md","change-record.md","adr.md"]
 REQUIRED = {
