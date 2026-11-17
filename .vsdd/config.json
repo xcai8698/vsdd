@@ -1,5 +1,5 @@
 {
-  "version": "0.4.0",
+  "version": "0.6.0",
   "stages": [
     "intake",
     "capability-mapped",
@@ -11,11 +11,17 @@
     "converged",
     "archived"
   ],
-  "traceabilityColumns": [
-    "source_id",
-    "target_id",
-    "relationship",
-    "status",
-    "evidence"
-  ]
+  "traceability": {
+    "format": "json-graph",
+    "artifact": "traceability.json",
+    "nodeCollection": "nodes",
+    "edgeCollection": "edges",
+    "schema": "schemas/traceability.schema.json"
+  },
+  "auditReport": {
+    "format": "json",
+    "schema": "schemas/audit-report.schema.json",
+    "issuePrefix": "AUD-",
+    "impactAnalysis": "reachable-downstream"
+  }
 }
