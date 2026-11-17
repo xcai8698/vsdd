@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """VSDD workflow CLI; Python 3.10+, standard library only."""
 import argparse, json, os, re, shutil, sys
-from vsdd_traceability import check_traceability, traceability_blockers, traverse_graph
+from vsdd_traceability import check_traceability, traceability_blockers, traverse_graph, build_audit_report, render_audit_markdown
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -152,6 +152,45 @@ def trace_check(args):
   print(f"  [{state.upper()}] {identifier}: {reasons}")
  for blocker in blockers: print("  - "+blocker)
  return int(bool(blockers))
+def audit(args):
+ f=root(args)/".vsdd/changes"/args.slug
+ if not f.is_dir(): print(f"[ERROR] Unknown change: {f}"); return 2
+ try: current=load_state(f).get("stage","intake")
+ except Exception as e: print(f"[ERROR] state.json: {e}"); return 2
+ report=build_audit_report(f,root(args),args.stage or current)
+ if args.format=="json":
+  output=json.dumps(report,ensure_ascii=False,indent=2)+"\\n"
+ elif args.format=="markdown":
+  output=render_audit_markdown(report)
+ else:
+  summary=report.get("summary",{})
+  lines=[
+   f"VSDD Traceability Audit: {report['changeId']} [{report['stage']}]",
+   f"Result: {report['result'].upper()} | Issues: {summary.get('totalIssues',0)} | Errors: {summary.get('errors',0)} | Warnings: {summary.get('warnings',0)}",
+   f"Graph: {summary.get('nodes',0)} nodes / {summary.get('edges',0)} edges",
+  ]
+  for issue in report.get("issues",[]):
+   target=issue.get("nodeId") or issue.get("edgeId") or issue.get("artifact") or "Project"
+   rec=issue.get("recommendation",{})
+   lines.append(f"[{issue.get('severity','').upper()}] {issue.get('issueId')} {issue.get('code')} — {target}: {issue.get('message')}")
+   missing=issue.get("missingLinks",{})
+   if missing.get("incoming"): lines.append("  Missing incoming: "+", ".join(missing["incoming"]))
+   if missing.get("outgoing"): lines.append("  Missing outgoing: "+", ".join(missing["outgoing"]))
+   if issue.get("affectedDownstream"): lines.append("  Affected downstream: "+", ".join(x["id"] for x in issue["affectedDownstream"]))
+   if rec:
+    lines.append("  Repair at "+str(rec.get("stage",report["stage"]))+" in "+", ".join(rec.get("artifacts",[])))
+    if rec.get("action"): lines.append("  Suggested action: "+rec["action"])
+  if not report.get("issues"): lines.append("No traceability issues found.")
+  output="\\n".join(lines)+"\\n"
+ if args.output:
+  destination=Path(args.output)
+  if not destination.is_absolute(): destination=root(args)/destination
+  destination.parent.mkdir(parents=True,exist_ok=True)
+  destination.write_text(output,encoding="utf-8")
+  print(f"[OK] Audit report written: {destination}")
+ else:
+  print(output,end="")
+ return int(report.get("result")!="pass")
 def status(args):
  for f in active(root(args)):
   try: st=load_state(f).get("stage","?")
@@ -214,12 +253,13 @@ def archive(args):
  target.parent.mkdir(parents=True,exist_ok=True); shutil.move(str(f),str(target)); print(f"[OK] Archived to {target}"); return 0
 def main():
  p=argparse.ArgumentParser(description="VSDD — Verifiable Spec-Driven Development"); p.add_argument("--version",action="version",version=VERSION); sub=p.add_subparsers(dest="cmd",required=True)
- for name,fn in [("init",init),("new",new),("status",status),("validate",validate),("trace-check",trace_check),("advance",advance),("trace",trace),("sync",sync),("archive",archive)]:
+ for name,fn in [("init",init),("new",new),("status",status),("validate",validate),("trace-check",trace_check),("audit",audit),("advance",advance),("trace",trace),("sync",sync),("archive",archive)]:
   q=sub.add_parser(name); q.add_argument("--root",default=".")
   if name=="init": q.add_argument("--update-templates",action="store_true",help="Overwrite project templates with bundled versions")
   if name=="new": q.add_argument("slug")
   if name=="validate": q.add_argument("slug",nargs="?")
   if name=="trace-check": q.add_argument("slug"); q.add_argument("--stage",choices=STAGES,help="Check a target stage instead of the current stage")
+  if name=="audit": q.add_argument("slug"); q.add_argument("--stage",choices=STAGES,help="Audit at a target stage instead of the current stage"); q.add_argument("--format",choices=["text","markdown","json"],default="text"); q.add_argument("--output",help="Write report to this path, relative to --root unless absolute")
   if name=="advance": q.add_argument("slug"); q.add_argument("--to",required=True,choices=STAGES[1:]); q.add_argument("--approval"); q.add_argument("--recorded-by")
   if name=="trace": q.add_argument("slug"); q.add_argument("--id",required=True); q.add_argument("--direction",choices=["both","upstream","downstream"],default="both"); q.add_argument("--depth",type=int,default=0,help="Maximum graph hops; 0 means unlimited")
   if name=="sync": q.add_argument("slug"); q.add_argument("--approval",required=True); q.add_argument("--artifact",action="append"); q.add_argument("--overwrite",action="store_true")
