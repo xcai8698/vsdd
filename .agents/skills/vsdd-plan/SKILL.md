@@ -19,4 +19,4 @@ description: 将已批准系统架构分解为软件需求、真实仓库中的�
 维护 SRC/FB→FR→AC→SYS→ARCH/SWE→Task/File→TC/Evidence 的双向关系；为每条追溯边提供来源或理由，稳定 ID 必须在工件中声明。运行 vsdd trace-check <change-id> --stage planned 并消除所有阻塞项。没有实际实现/测试证据时不得把边标记为 verified。
 
 ## 输出与门禁
-更新 software-requirements.md、tasks.md、测试映射和 traceability.csv；执行 CLI 与人工一致性检查。软件负责人和测试负责人批准计划后，才开始大范围实现。
+更新 software-requirements.md、tasks.md、测试映射和 traceability.json；执行 CLI 与人工一致性检查。软件负责人和测试负责人批准计划后，才开始大范围实现。
