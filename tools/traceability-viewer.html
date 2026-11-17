@@ -67,25 +67,61 @@ else if(t==="software-requirement"&&l>=4){r.in.push("system-requirement");r.out.
 else if(t==="task"&&l>=4){r.in.push("software-requirement");if(l>=6)r.out.push("code-file");}
 else if(t==="test-case"&&l>=4)r.in.push("software-requirement");
 else if(t==="code-file"&&l>=6)r.in.push("task");return r;}
-function computeAudit(){const nodes=Array.isArray(graph.nodes)?graph.nodes:[],edges=Array.isArray(graph.edges)?graph.edges:[],byId=new Map(),reasons={},states={},edgeStates={},out={},inc={},brokenNodes=new Set(),incompleteNodes=new Set(),validEdges=[],globalErrors=[];
-nodes.forEach((n,i)=>{if(!n||typeof n!=="object"||!n.id){globalErrors.push("nodes["+i+"] 缺少有效 ID");return;}if(byId.has(n.id)){globalErrors.push("重复节点 ID："+n.id);return;}byId.set(n.id,n);});
-edges.forEach((e,i)=>{const id=e?.id||("EDGE-"+i),a=e?.source,b=e?.target;let state="complete",reason="";
-if(!e||typeof e!=="object"||!a||!b||!e.type){state="broken";reason="关系缺少 source / target / type。";}
-else if(!byId.has(a)||!byId.has(b)){state="broken";reason="端点节点不存在："+(!byId.has(a)?a:"")+" "+(!byId.has(b)?b:"");}
-else{const pair=byId.get(a).type+"|"+byId.get(b).type;if(!ALLOWED[pair]||!ALLOWED[pair].includes(e.type)){state="broken";reason="关系类型与节点类型不匹配："+pair+" / "+e.type;}
-else if(["blocked","invalidated"].includes(e.status)){state="incomplete";reason="关系被标记为 blocked 或 invalidated。";}
-else if(LEVEL[stage()]>=7&&!["confirmed","verified","waived"].includes(e.status)){state="incomplete";reason="收敛阶段的关系尚未确认或验证。";}}
-edgeStates[id]={state,reason};if(state==="broken"){if(byId.has(a))brokenNodes.add(a);if(byId.has(b))brokenNodes.add(b);}if(state==="incomplete"){if(byId.has(a))incompleteNodes.add(a);if(byId.has(b))incompleteNodes.add(b);}
-if(state==="complete"&&byId.has(a)&&byId.has(b)){const v=Object.assign({},e,{id});validEdges.push(v);(out[a]??=[]).push(v);(inc[b]??=[]).push(v);}});
-byId.forEach((n,id)=>{const why=[];if(brokenNodes.has(id)){states[id]="broken";why.push("存在指向缺失节点或非法关系类型的断链。");}
-else if(incompleteNodes.has(id)){states[id]="incomplete";why.push("关联关系被阻塞、失效，或在收敛阶段尚未确认。");}
-else if(isExcluded(n)){states[id]="excluded";why.push("明确标记为范围外或延期。");}
-else if(!(out[id]?.length)&&!(inc[id]?.length)){states[id]="orphan";why.push("没有任何有效的上游或下游关系。");}
-else{const req=expected(n),inTypes=new Set((inc[id]||[]).map(e=>byId.get(e.source)?.type)),outTypes=new Set((out[id]||[]).map(e=>byId.get(e.target)?.type)),mi=req.in.filter(t=>!inTypes.has(t)),mo=req.out.filter(t=>!outTypes.has(t));
-if(mi.length||mo.length){states[id]="incomplete";if(mi.length)why.push("缺少上游关系："+mi.map(t=>TYPE_LABEL[t]||t).join("、"));if(mo.length)why.push("缺少下游关系："+mo.map(t=>TYPE_LABEL[t]||t).join("、"));}
-else{states[id]="complete";why.push("当前阶段要求的上下游关系类型均已连接。");}}
-if(n.status==="blocked"||n.status==="invalidated"){states[id]="incomplete";why.push("节点状态为 "+n.status+"。");}reasons[id]=why;});
-return {nodes,edges,byId,validEdges,out,inc,states,reasons,edgeStates,globalErrors};}
+function computeAudit(){
+const nodes=Array.isArray(graph.nodes)?graph.nodes:[],edges=Array.isArray(graph.edges)?graph.edges:[],byId=new Map(),reasons={},states={},edgeStates={},out={},inc={},brokenNodes=new Set(),incompleteNodes=new Set(),validEdges=[],globalErrors=[];
+const allowedStatuses=["proposed","confirmed","verified","blocked","invalidated","waived"];
+const edgeKeys=new Set(),edgeIds=new Set();
+nodes.forEach((n,i)=>{
+ if(!n||typeof n!=="object"||typeof n.id!=="string"||!n.id.trim()){globalErrors.push("nodes["+i+"] 缺少有效 ID");return;}
+ if(byId.has(n.id)){globalErrors.push("重复节点 ID："+n.id);return;}
+ byId.set(n.id,n);
+ if(!n.type||!TYPE_LABEL[n.type])globalErrors.push(n.id+" 节点类型无效。");
+ if(!String(n.title||"").trim())globalErrors.push(n.id+" 缺少标题。");
+});
+edges.forEach((e,i)=>{
+ const id=e?.id||("EDGE-"+i),a=e?.source,b=e?.target;
+ let state="complete",reason="";
+ if(!e||typeof e!=="object"||!a||!b||!e.type||!e.status){state="broken";reason="关系缺少 ID、source、target、type 或 status。";}
+ else if(!/^TR-\\d{3,}$/.test(String(e.id||""))){state="broken";reason="关系 ID 格式必须为 TR-xxx。";}
+ else if(edgeIds.has(e.id)){state="broken";reason="关系 ID 重复。";}
+ else if(!byId.has(a)||!byId.has(b)){state="broken";reason="端点节点不存在："+(!byId.has(a)?a:"")+" "+(!byId.has(b)?b:"");}
+ else{
+  const pair=byId.get(a).type+"|"+byId.get(b).type,key=a+"|"+b+"|"+e.type;
+  if(!ALLOWED[pair]||!ALLOWED[pair].includes(e.type)){state="broken";reason="关系类型与节点类型不匹配："+pair+" / "+e.type;}
+  else if(edgeKeys.has(key)){state="broken";reason="同一关系重复定义。";}
+  else if(!allowedStatuses.includes(e.status)){state="broken";reason="关系状态无效："+e.status;}
+  else if(!Array.isArray(e.evidence)){state="incomplete";reason="evidence 必须是数组。";}
+  else if((LEVEL[stage()]??0)>=2&&e.evidence.length===0){state="incomplete";reason="当前阶段要求每条关系提供来源或理由。";}
+  else if(e.evidence.some(v=>!v||typeof v!=="object"||!String(v.artifact||"").trim()||!String(v.note||"").trim())){state="incomplete";reason="关系证据缺少 artifact 或 note。";}
+  else if(["blocked","invalidated"].includes(e.status)){state="incomplete";reason="关系被标记为 blocked 或 invalidated。";}
+  else if((LEVEL[stage()]??0)>=7&&!["confirmed","verified","waived"].includes(e.status)){state="incomplete";reason="收敛阶段的关系尚未确认或验证。";}
+  if(state!=="broken"&&state!=="incomplete"){edgeKeys.add(key);}
+ }
+ if(e&&e.id)edgeIds.add(e.id);
+ edgeStates[id]={state,reason};
+ if(state==="broken"){if(byId.has(a))brokenNodes.add(a);if(byId.has(b))brokenNodes.add(b);}
+ if(state==="incomplete"){if(byId.has(a))incompleteNodes.add(a);if(byId.has(b))incompleteNodes.add(b);}
+ if(state!=="broken"&&byId.has(a)&&byId.has(b)){
+  const v=Object.assign({},e,{id});validEdges.push(v);(out[a]??=[]).push(v);(inc[b]??=[]).push(v);
+ }
+});
+byId.forEach((n,id)=>{
+ const why=[];
+ if(brokenNodes.has(id)){states[id]="broken";why.push("存在指向缺失节点、重复关系或非法关系类型的断链。");}
+ else if(incompleteNodes.has(id)){states[id]="incomplete";why.push("部分关系缺少证据、被阻塞或在收敛阶段尚未确认。");}
+ else if(isExcluded(n)){states[id]="excluded";why.push("明确标记为范围外或延期。");}
+ else if(!(out[id]?.length)&&!(inc[id]?.length)){states[id]="orphan";why.push("没有任何有效的上游或下游关系。");}
+ else{
+  const req=expected(n),inTypes=new Set((inc[id]||[]).map(e=>byId.get(e.source)?.type)),outTypes=new Set((out[id]||[]).map(e=>byId.get(e.target)?.type));
+  const mi=req.in.filter(t=>!inTypes.has(t)),mo=req.out.filter(t=>!outTypes.has(t));
+  if(mi.length||mo.length){states[id]="incomplete";if(mi.length)why.push("缺少上游关系："+mi.map(t=>TYPE_LABEL[t]||t).join("、"));if(mo.length)why.push("缺少下游关系："+mo.map(t=>TYPE_LABEL[t]||t).join("、"));}
+  else{states[id]="complete";why.push("当前阶段要求的上下游关系类型均已连接。");}
+ }
+ if(["blocked","invalidated"].includes(n.status)){states[id]="incomplete";why.push("节点状态为 "+n.status+"。");}
+ reasons[id]=why;
+});
+return {nodes,edges,byId,validEdges,out,inc,states,reasons,edgeStates,globalErrors};
+}
 function nodeStatus(id){return audit?.states[id]||"broken";}
 function edgeStatus(e){return audit?.edgeStates[e.id||""]?.state||"broken";}
 function svgText(parent,x,y,text,cls){const t=el("text",{x,y,class:cls});t.textContent=text;parent.appendChild(t);return t;}
