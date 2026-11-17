@@ -276,16 +276,21 @@ def audit_graph(graph, declared, folder, project_root, stage):
     for extra in sorted(graph_ids - declared_ids):
         blockers.append(f"{extra}: node exists in traceability.json but not in its authoritative Markdown artifact")
 
-    edge_by_id, edge_keys, valid_edges = {}, set(), []
+    edge_by_id, edge_keys, valid_edges = {}, {}, []
     edge_issues = {}
     for index, edge in enumerate(edges):
         if not isinstance(edge, dict):
             blockers.append(f"edges[{index}] must be an object")
             continue
-        edge_id = edge.get("id") or f"edges[{index}]"
+        raw_edge_id = edge.get("id")
+        edge_id = raw_edge_id if isinstance(raw_edge_id, str) and raw_edge_id else f"edges[{index}]"
         if edge_id in edge_by_id:
             blockers.append(f"Duplicate edge ID: {edge_id}")
+            edge_issues[edge_id] = "broken"
         edge_by_id[edge_id] = edge
+        if not isinstance(raw_edge_id, str) or not re.fullmatch(r"TR-\\d{3,}", raw_edge_id):
+            blockers.append(f"{edge_id}: edge ID must use TR-xxx")
+            edge_issues[edge_id] = "broken"
         source, target = edge.get("source"), edge.get("target")
         relation = edge.get("type")
         status = edge.get("status")
@@ -296,7 +301,10 @@ def audit_graph(graph, declared, folder, project_root, stage):
         key = (source, target, relation)
         if key in edge_keys:
             blockers.append(f"{edge_id}: duplicate relation {source} -> {target} ({relation})")
-        edge_keys.add(key)
+            edge_issues[edge_id] = "broken"
+            edge_issues[edge_keys[key]] = "broken"
+        else:
+            edge_keys[key] = edge_id
         if source not in node_by_id or target not in node_by_id:
             blockers.append(f"{edge_id}: dangling edge {source} -> {target}; endpoint node is missing")
             edge_issues[edge_id] = "broken"
@@ -304,6 +312,10 @@ def audit_graph(graph, declared, folder, project_root, stage):
         pair = (node_by_id[source].get("type"), node_by_id[target].get("type"))
         if pair not in ALLOWED_RELATIONS or relation not in ALLOWED_RELATIONS[pair]:
             blockers.append(f"{edge_id}: invalid relation type {relation} for {pair[0]} -> {pair[1]}")
+            edge_issues[edge_id] = "broken"
+            continue
+        if status not in {"proposed", "confirmed", "verified", "blocked", "invalidated", "waived"}:
+            blockers.append(f"{edge_id}: unsupported edge status {status}")
             edge_issues[edge_id] = "broken"
             continue
         evidence = edge.get("evidence")
@@ -321,13 +333,10 @@ def audit_graph(graph, declared, folder, project_root, stage):
                     evidence_invalid = True
         if evidence_invalid:
             edge_issues[edge_id] = "incomplete"
-        if not re.fullmatch(r"TR-\d{3,}", str(edge_id)) and not str(edge_id).startswith("edges["):
-            blockers.append(f"{edge_id}: edge ID must use TR-xxx")
-        if status not in {"proposed", "confirmed", "verified", "blocked", "invalidated", "waived"}:
-            blockers.append(f"{edge_id}: unsupported edge status {status}")
         if status in {"invalidated", "blocked"} or (LEVEL.get(stage,0) >= LEVEL["converged"] and status not in {"confirmed","verified","waived"}):
             edge_issues[edge_id] = "incomplete"
-        valid_edges.append({"id": edge_id, "source": source, "target": target, "type": relation, "status": status})
+        if edge_issues.get(edge_id) != "broken":
+            valid_edges.append({"id": edge_id, "source": source, "target": target, "type": relation, "status": status})
 
     outgoing, incoming = {}, {}
     broken_nodes, incomplete_edge_nodes = set(), set()
