@@ -144,6 +144,17 @@ Run `vsdd trace-check <change-id>` to inspect coverage at the current stage, or 
 Static checks cannot establish semantic equivalence of natural-language statements. VSDD therefore requires a reviewed `source-register.md` and a completed Feature Spec completeness checklist with real review-record references.
 
 
+## Actionable audit reports
+
+Generate a human-readable report or a machine-readable JSON bundle:
+
+```bash
+vsdd audit add-speed-warning --format markdown
+vsdd audit add-speed-warning --format json --output .vsdd/reports/add-speed-warning-audit.json
+```
+
+Each finding has a stable issue ID, severity, node/edge reference, missing incoming/outgoing link types, reachable downstream impact, and a suggested repair artifact and workflow stage. The JSON report embeds a graph snapshot so the standalone viewer can load the report itself, not just the raw graph. The command exits non-zero when the audit is blocked, while still writing the requested report.
+
 ## Visual traceability review
 
 Each change stores its canonical graph in `.vsdd/changes/<change-id>/traceability.json`. Open the [Traceability Graph Viewer](tools/traceability-viewer.html) in a browser and load that JSON file to inspect the graph. Nodes are colored green when the current stage's required links are complete, amber when some expected links/evidence are missing, and red when isolated or connected by broken relations. Explicitly out-of-scope/deferred source items are gray.
