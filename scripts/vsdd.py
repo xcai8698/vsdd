@@ -159,7 +159,7 @@ def audit(args):
  except Exception as e: print(f"[ERROR] state.json: {e}"); return 2
  report=build_audit_report(f,root(args),args.stage or current)
  if args.format=="json":
-  output=json.dumps(report,ensure_ascii=False,indent=2)+"\\n"
+  output=json.dumps(report,ensure_ascii=False,indent=2)+"\n"
  elif args.format=="markdown":
   output=render_audit_markdown(report)
  else:
@@ -181,7 +181,7 @@ def audit(args):
     lines.append("  Repair at "+str(rec.get("stage",report["stage"]))+" in "+", ".join(rec.get("artifacts",[])))
     if rec.get("action"): lines.append("  Suggested action: "+rec["action"])
   if not report.get("issues"): lines.append("No traceability issues found.")
-  output="\\n".join(lines)+"\\n"
+  output="\n".join(lines)+"\n"
  if args.output:
   destination=Path(args.output)
   if not destination.is_absolute(): destination=root(args)/destination
