@@ -442,6 +442,7 @@ def audit_graph(graph, declared, folder, project_root, stage):
             "orphan": sum(1 for x in node_states.values() if x == "orphan"),
             "broken": sum(1 for x in node_states.values() if x == "broken"),
             "excluded": sum(1 for x in node_states.values() if x == "excluded"),
+            "pending": sum(1 for x in node_states.values() if x == "pending"),
         },
         "nodes": node_states,
         "reasons": node_reasons,
