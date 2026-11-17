@@ -288,7 +288,7 @@ def audit_graph(graph, declared, folder, project_root, stage):
             blockers.append(f"Duplicate edge ID: {edge_id}")
             edge_issues[edge_id] = "broken"
         edge_by_id[edge_id] = edge
-        if not isinstance(raw_edge_id, str) or not re.fullmatch(r"TR-\\d{3,}", raw_edge_id):
+        if not isinstance(raw_edge_id, str) or not re.fullmatch(r"TR-\d{3,}", raw_edge_id):
             blockers.append(f"{edge_id}: edge ID must use TR-xxx")
             edge_issues[edge_id] = "broken"
         source, target = edge.get("source"), edge.get("target")
