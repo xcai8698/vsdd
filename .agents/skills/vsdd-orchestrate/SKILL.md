@@ -29,6 +29,7 @@ description: 编排从需求探索、能力复用、规格、架构、软件计�
 vsdd status --root .
 vsdd validate <change-id> --root .
 vsdd trace-check <change-id> --root .
+vsdd audit <change-id> --format markdown --root .
 vsdd trace <change-id> --id FR-001 --direction both --root .
 vsdd advance <change-id> --to <next-stage> --root .
 ```
