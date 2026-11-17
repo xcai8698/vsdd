@@ -16,8 +16,20 @@ jobs:
           python-version: "3.12"
       - name: Check shell installer syntax
         run: bash -n install.sh
-      - name: Compile CLI
-        run: python -m py_compile scripts/vsdd.py
+      - name: Compile CLI and traceability engine
+        run: python -m py_compile scripts/vsdd.py scripts/vsdd_traceability.py
+      - name: Check standalone viewer JavaScript
+        run: |
+          python - <<'PY'
+          import re
+          from pathlib import Path
+          html = Path("tools/traceability-viewer.html").read_text(encoding="utf-8")
+          scripts = re.findall(r"<script[^>]*>([\\s\\S]*?)</script>", html)
+          if len(scripts) != 1:
+              raise SystemExit(f"expected one inline viewer script, found {len(scripts)}")
+          Path("/tmp/vsdd-traceability-viewer.js").write_text(scripts[0], encoding="utf-8")
+          PY
+          node --check /tmp/vsdd-traceability-viewer.js
       - name: Run CLI tests
         run: python -m unittest discover -s tests -v
       - name: Smoke test global install and project init
@@ -32,5 +44,6 @@ jobs:
           test -f "$TMP/project/.agents/skills/vsdd-verify/SKILL.md"
           test -f "$TMP/project/.agents/skills/vsdd-change/SKILL.md"
           test -f "$TMP/project/.vsdd/templates/feature-spec.md"
+          test -f "$TMP/project/.vsdd/schemas/audit-report.schema.json"
           "$TMP/prefix/bin/vsdd" new demo-feature --root "$TMP/project"
           test -f "$TMP/project/.vsdd/changes/demo-feature/feature-spec.md"
