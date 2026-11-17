@@ -1,0 +1,314 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "VSDD Traceability Audit Report",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "reportVersion",
+    "changeId",
+    "stage",
+    "generatedAt",
+    "result",
+    "summary",
+    "issues",
+    "blockers",
+    "graph"
+  ],
+  "properties": {
+    "reportVersion": {
+      "const": "1.0"
+    },
+    "changeId": {
+      "type": "string",
+      "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+    },
+    "stage": {
+      "enum": [
+        "intake",
+        "capability-mapped",
+        "specified",
+        "architecture-ready",
+        "planned",
+        "implementing",
+        "verifying",
+        "converged",
+        "archived"
+      ]
+    },
+    "generatedAt": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "result": {
+      "enum": [
+        "pass",
+        "blocked"
+      ]
+    },
+    "summary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "totalIssues",
+        "errors",
+        "warnings",
+        "nodes",
+        "edges",
+        "complete",
+        "incomplete",
+        "orphan",
+        "broken",
+        "excluded",
+        "pending",
+        "affectedDownstreamNodes"
+      ],
+      "properties": {
+        "totalIssues": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "errors": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "warnings": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "nodes": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "edges": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "complete": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "incomplete": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "orphan": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "broken": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "excluded": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "pending": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "affectedDownstreamNodes": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "issues": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "issueId",
+          "code",
+          "severity",
+          "state",
+          "nodeId",
+          "edgeId",
+          "nodeType",
+          "artifact",
+          "message",
+          "missingLinks",
+          "affectedDownstream",
+          "recommendation",
+          "source"
+        ],
+        "properties": {
+          "issueId": {
+            "type": "string",
+            "pattern": "^AUD-[0-9]{3,}$"
+          },
+          "code": {
+            "type": "string",
+            "minLength": 1
+          },
+          "severity": {
+            "enum": [
+              "error",
+              "warning",
+              "info"
+            ]
+          },
+          "state": {
+            "enum": [
+              "broken",
+              "orphan",
+              "incomplete",
+              "complete",
+              "excluded",
+              "pending"
+            ]
+          },
+          "nodeId": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "edgeId": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "nodeType": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "artifact": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "message": {
+            "type": "string",
+            "minLength": 1
+          },
+          "missingLinks": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "incoming",
+              "outgoing"
+            ],
+            "properties": {
+              "incoming": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "outgoing": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "affectedDownstream": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "id",
+                "type",
+                "typeLabel",
+                "title",
+                "artifact",
+                "distance"
+              ],
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "type": {
+                  "type": "string"
+                },
+                "typeLabel": {
+                  "type": "string"
+                },
+                "title": {
+                  "type": "string"
+                },
+                "artifact": {
+                  "type": "string"
+                },
+                "distance": {
+                  "type": "integer",
+                  "minimum": 1
+                }
+              }
+            }
+          },
+          "recommendation": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "stage",
+              "artifacts",
+              "action"
+            ],
+            "properties": {
+              "stage": {
+                "type": "string"
+              },
+              "artifacts": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "action": {
+                "type": "string"
+              }
+            }
+          },
+          "source": {
+            "type": "object"
+          }
+        }
+      }
+    },
+    "blockers": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "graph": {
+      "type": "object",
+      "required": [
+        "schemaVersion",
+        "changeId",
+        "nodes",
+        "edges"
+      ],
+      "properties": {
+        "schemaVersion": {
+          "type": "string"
+        },
+        "changeId": {
+          "type": "string"
+        },
+        "nodes": {
+          "type": "array",
+          "items": {
+            "type": "object"
+          }
+        },
+        "edges": {
+          "type": "array",
+          "items": {
+            "type": "object"
+          }
+        }
+      },
+      "additionalProperties": true
+    }
+  }
+}
