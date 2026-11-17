@@ -355,8 +355,21 @@ def audit_graph(graph, declared, folder, project_root, stage):
         outgoing.setdefault(edge["source"], []).append(edge)
         incoming.setdefault(edge["target"], []).append(edge)
 
-    node_states, node_reasons = {}, {}
+    node_states, node_reasons, node_checks = {}, {}, {}
     for identifier, node in node_by_id.items():
+        expected = _expected_for(node, stage)
+        actual_in = {node_by_id[e["source"]].get("type") for e in incoming.get(identifier, [])}
+        actual_out = {node_by_id[e["target"]].get("type") for e in outgoing.get(identifier, [])}
+        missing_in = expected["in"] - actual_in
+        missing_out = expected["out"] - actual_out
+        node_checks[identifier] = {
+            "expectedIncoming": sorted(expected["in"]),
+            "expectedOutgoing": sorted(expected["out"]),
+            "actualIncoming": sorted(actual_in),
+            "actualOutgoing": sorted(actual_out),
+            "missingIncoming": sorted(missing_in),
+            "missingOutgoing": sorted(missing_out),
+        }
         reasons = []
         if identifier in broken_nodes:
             state = "broken"
@@ -371,23 +384,21 @@ def audit_graph(graph, declared, folder, project_root, stage):
             state = "excluded"
             reasons.append("source is explicitly out-of-scope or deferred")
         elif not outgoing.get(identifier) and not incoming.get(identifier):
-            state = "orphan"
-            reasons.append("no incoming or outgoing trace links")
-        else:
-            expected = _expected_for(node, stage)
-            actual_in = {node_by_id[e["source"]].get("type") for e in incoming.get(identifier, [])}
-            actual_out = {node_by_id[e["target"]].get("type") for e in outgoing.get(identifier, [])}
-            missing_in = expected["in"] - actual_in
-            missing_out = expected["out"] - actual_out
-            if missing_in or missing_out:
-                state = "incomplete"
-                if missing_in:
-                    reasons.append("missing incoming: " + ", ".join(sorted(missing_in)))
-                if missing_out:
-                    reasons.append("missing outgoing: " + ", ".join(sorted(missing_out)))
+            if expected["in"] or expected["out"]:
+                state = "orphan"
+                reasons.append("no incoming or outgoing trace links")
             else:
-                state = "complete"
-                reasons.append("all stage-required link types are present")
+                state = "pending"
+                reasons.append("trace links are not required at the current stage")
+        elif missing_in or missing_out:
+            state = "incomplete"
+            if missing_in:
+                reasons.append("missing incoming: " + ", ".join(sorted(missing_in)))
+            if missing_out:
+                reasons.append("missing outgoing: " + ", ".join(sorted(missing_out)))
+        else:
+            state = "complete"
+            reasons.append("all stage-required link types are present")
         node_states[identifier] = state
         node_reasons[identifier] = reasons
         if stage in {"specified","architecture-ready","planned","implementing","verifying","converged"}:
@@ -433,7 +444,17 @@ def audit_graph(graph, declared, folder, project_root, stage):
         },
         "nodes": node_states,
         "reasons": node_reasons,
+        "nodeChecks": node_checks,
         "edges": {key: edge_issues.get(key, "complete") for key in edge_by_id},
+        "missingGraphNodes": [
+            {"id": ident, **declared[ident]}
+            for ident in sorted(set(declared) - {key for key in node_by_id if not key.startswith("FILE:")})
+        ],
+        "unregisteredGraphNodes": [
+            {"id": ident, "type": node.get("type"), "title": node.get("title", ""), "artifact": node.get("artifact", "")}
+            for ident, node in sorted(node_by_id.items())
+            if ident not in declared and not ident.startswith("FILE:")
+        ],
     }
     return sorted(set(blockers)), summary
 
