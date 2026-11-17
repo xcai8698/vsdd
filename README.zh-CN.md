@@ -125,11 +125,17 @@ vsdd validate speed-warning
 vsdd trace-check speed-warning
 vsdd trace-check speed-warning --stage planned
 vsdd trace speed-warning --id FR-001 --direction both
+
+# 生成可读的审查报告
+vsdd audit speed-warning --format markdown
+
+# 生成可供 CI / Viewer 使用的 JSON 审查报告
+vsdd audit speed-warning --format json --output .vsdd/reports/speed-warning-audit.json
 ```
 
 `vsdd trace-check <change-id>` 按当前阶段检查追溯覆盖缺口；`vsdd validate` 在 specified 及后续阶段自动执行同一追溯门禁。可用 `--direction upstream|downstream|both` 递归查看追溯链。
 
-追溯数据采用 `.vsdd/changes/<change-id>/traceability.json`，由 `nodes` 和 `edges` 组成。可以打开[追溯关系查看器](tools/traceability-viewer.html)，加载该 JSON 文件查看正常、断链、孤立和覆盖不完整节点。
+追溯数据采用 `.vsdd/changes/<change-id>/traceability.json`，由 `nodes` 和 `edges` 组成。可以打开[追溯关系查看器](tools/traceability-viewer.html)，加载该 JSON 文件查看正常、断链、孤立和覆盖不完整节点。 也可以加载 `vsdd audit --format json` 生成的审查报告 JSON；它会展示问题编号、缺失的关系类型、受影响的下游节点和建议修复工件/阶段。
 
 
 ### 按门禁逐阶段推进
