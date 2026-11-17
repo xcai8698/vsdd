@@ -197,5 +197,58 @@ class VSDDCLITests(unittest.TestCase):
             self.assertNotEqual(result.returncode, 0)
             self.assertIn("AC-001: declared in Markdown but missing from traceability.json", result.stdout)
 
+    def test_audit_report_json_has_repair_and_downstream_impact(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            folder = self.prepare_planned_feature(Path(tmp))
+            graph_path = folder / "traceability.json"
+            graph = json.loads(graph_path.read_text(encoding="utf-8"))
+            graph["edges"] = [
+                edge for edge in graph["edges"]
+                if not (edge["source"] == "SWE-001" and edge["target"] == "TC-001")
+            ]
+            graph_path.write_text(json.dumps(graph, indent=2), encoding="utf-8")
+            report_path = Path(tmp) / "reports" / "traceability-audit.json"
+            result = self.run_cli(
+                "audit", "trace-demo", "--format", "json",
+                "--output", str(report_path), "--root", tmp,
+            )
+            self.assertNotEqual(result.returncode, 0)
+            self.assertTrue(report_path.exists(), result.stdout + result.stderr)
+            report = json.loads(report_path.read_text(encoding="utf-8"))
+            issue = next(
+                item for item in report["issues"]
+                if item.get("nodeId") == "SWE-001" and item["code"] == "incomplete-node"
+            )
+            self.assertIn("test-case", issue["missingLinks"]["outgoing"])
+            self.assertEqual(issue["recommendation"]["stage"], "planned")
+            self.assertIn("T-001", [item["id"] for item in issue["affectedDownstream"]])
+            self.assertIn("traceability.json", issue["recommendation"]["artifacts"])
+
+    def test_audit_report_includes_markdown_node_missing_from_graph(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            folder = self.prepare_planned_feature(Path(tmp))
+            graph_path = folder / "traceability.json"
+            graph = json.loads(graph_path.read_text(encoding="utf-8"))
+            graph["nodes"] = [node for node in graph["nodes"] if node["id"] != "AC-001"]
+            graph_path.write_text(json.dumps(graph, indent=2), encoding="utf-8")
+            report_path = Path(tmp) / "audit-report.json"
+            result = self.run_cli(
+                "audit", "trace-demo", "--format", "json",
+                "--output", str(report_path), "--root", tmp,
+            )
+            self.assertNotEqual(result.returncode, 0)
+            report = json.loads(report_path.read_text(encoding="utf-8"))
+            issue = next(item for item in report["issues"] if item["code"] == "missing-graph-node")
+            self.assertEqual(issue["nodeId"], "AC-001")
+            self.assertTrue(any(node.get("auditSynthetic") and node["id"] == "AC-001"
+                                for node in report["graph"]["nodes"]))
+
+    def test_audit_report_markdown_format(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            self.prepare_planned_feature(Path(tmp))
+            result = self.run_cli("audit", "trace-demo", "--format", "markdown", "--root", tmp)
+            self.assertIn("# VSDD Traceability Audit", result.stdout)
+            self.assertIn("Findings", result.stdout)
+
 if __name__ == "__main__":
     unittest.main()
