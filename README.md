@@ -142,3 +142,10 @@ MIT. See [LICENSE](LICENSE).
 Run `vsdd trace-check <change-id>` to inspect coverage at the current stage, or `vsdd trace-check <change-id> --stage planned` to preview a later gate. `vsdd validate` runs the same checks automatically from the `specified` stage onward. The checker detects undeclared/duplicate IDs, missing incoming or outgoing trace edges, uncovered source obligations, missing architecture/software allocation, orphan tasks/tests, absent implementation file mappings, and incomplete verification evidence. Use `vsdd trace <change-id> --id FR-001 --direction upstream|downstream|both` to navigate the connected trace graph.
 
 Static checks cannot establish semantic equivalence of natural-language statements. VSDD therefore requires a reviewed `source-register.md` and a completed Feature Spec completeness checklist with real review-record references.
+
+
+## Visual traceability review
+
+Each change stores its canonical graph in `.vsdd/changes/<change-id>/traceability.json`. Open `tools/traceability-viewer.html` in a browser and load that JSON file to inspect the graph. Nodes are colored green when the current stage's required links are complete, amber when some expected links/evidence are missing, and red when isolated or connected by broken relations. Explicitly out-of-scope/deferred source items are gray.
+
+The viewer is a visual review surface; `vsdd trace-check <change-id>` remains the repository-aware gate because it cross-checks graph nodes against the source register and Markdown requirements.
