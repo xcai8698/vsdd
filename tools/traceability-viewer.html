@@ -73,7 +73,7 @@ const allowedStatuses=["proposed","confirmed","verified","blocked","invalidated"
 const edgeKeys=new Set(),edgeIds=new Set();
 nodes.forEach((n,i)=>{
  if(!n||typeof n!=="object"||typeof n.id!=="string"||!n.id.trim()){globalErrors.push("nodes["+i+"] 缺少有效 ID");return;}
- if(byId.has(n.id)){globalErrors.push("重复节点 ID："+n.id);return;}
+ if(byId.has(n.id)){globalErrors.push("重复节点 ID："+n.id);brokenNodes.add(n.id);return;}
  byId.set(n.id,n);
  if(!n.type||!TYPE_LABEL[n.type])globalErrors.push(n.id+" 节点类型无效。");
  if(!String(n.title||"").trim())globalErrors.push(n.id+" 缺少标题。");
@@ -82,7 +82,7 @@ edges.forEach((e,i)=>{
  const id=e?.id||("EDGE-"+i),a=e?.source,b=e?.target;
  let state="complete",reason="";
  if(!e||typeof e!=="object"||!a||!b||!e.type||!e.status){state="broken";reason="关系缺少 ID、source、target、type 或 status。";}
- else if(!/^TR-\\d{3,}$/.test(String(e.id||""))){state="broken";reason="关系 ID 格式必须为 TR-xxx。";}
+ else if(!/^TR-\d{3,}$/.test(String(e.id||""))){state="broken";reason="关系 ID 格式必须为 TR-xxx。";}
  else if(edgeIds.has(e.id)){state="broken";reason="关系 ID 重复。";}
  else if(!byId.has(a)||!byId.has(b)){state="broken";reason="端点节点不存在："+(!byId.has(a)?a:"")+" "+(!byId.has(b)?b:"");}
  else{
