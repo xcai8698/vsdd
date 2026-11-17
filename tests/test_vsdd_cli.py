@@ -26,6 +26,7 @@ class VSDDCLITests(unittest.TestCase):
             self.assertEqual(graph["changeId"], "add-demo")
             self.assertEqual(graph["nodes"], [])
             self.assertTrue((base / ".vsdd/schemas/traceability.schema.json").exists())
+            self.assertTrue((base / ".vsdd/schemas/audit-report.schema.json").exists())
             self.assertTrue((base / ".agents/skills/vsdd-orchestrate/SKILL.md").exists())
             self.assertTrue((base / ".agents/skills/vsdd-capabilities/SKILL.md").exists())
 
