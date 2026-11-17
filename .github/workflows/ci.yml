@@ -47,3 +47,9 @@ jobs:
           test -f "$TMP/project/.vsdd/schemas/audit-report.schema.json"
           "$TMP/prefix/bin/vsdd" new demo-feature --root "$TMP/project"
           test -f "$TMP/project/.vsdd/changes/demo-feature/feature-spec.md"
+          set +e
+          "$TMP/prefix/bin/vsdd" audit demo-feature --format json --output "$TMP/audit-report.json" --root "$TMP/project"
+          AUDIT_EXIT=$?
+          set -e
+          test "$AUDIT_EXIT" -eq 1
+          python -c 'import json,sys; r=json.load(open(sys.argv[1])); assert r["reportVersion"] == "1.0"; assert r["changeId"] == "demo-feature"' "$TMP/audit-report.json"
