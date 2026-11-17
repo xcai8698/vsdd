@@ -2,6 +2,7 @@
 import json
 import re
 from pathlib import Path
+from datetime import datetime, timezone
 
 LEVEL = {
     "intake": 0, "capability-mapped": 1, "specified": 2, "architecture-ready": 3,
@@ -543,6 +544,297 @@ def check_traceability(folder, project_root, stage):
 
 def traceability_blockers(folder, project_root, stage):
     return load_and_check(folder, project_root, stage)[0]
+
+
+NODE_ARTIFACT = {
+    "feature": "feature-brief.md", "source": "source-register.md",
+    "feature-requirement": "feature-spec.md", "acceptance-criterion": "feature-spec.md",
+    "system-requirement": "system-requirements.md", "architecture-element": "architecture.md",
+    "software-requirement": "software-requirements.md", "task": "tasks.md",
+    "code-file": "implementation files", "test-case": "verification.md",
+}
+NODE_STAGE = {
+    "feature": "specified", "source": "specified",
+    "feature-requirement": "specified", "acceptance-criterion": "specified",
+    "system-requirement": "architecture-ready", "architecture-element": "architecture-ready",
+    "software-requirement": "planned", "task": "planned",
+    "code-file": "verifying", "test-case": "planned",
+}
+TYPE_LABEL_ZH = {
+    "feature": "Feature", "source": "输入来源", "feature-requirement": "Feature 需求",
+    "acceptance-criterion": "验收标准", "system-requirement": "系统需求",
+    "architecture-element": "架构元素", "software-requirement": "软件需求",
+    "task": "实现任务", "code-file": "代码文件", "test-case": "测试用例",
+}
+
+def _reachable_nodes(start, graph_nodes, graph_edges, direction="downstream", limit=0):
+    by_id = {n.get("id"): n for n in graph_nodes if isinstance(n, dict) and n.get("id")}
+    adjacency = {}
+    for edge in graph_edges:
+        if not isinstance(edge, dict):
+            continue
+        source, target = edge.get("source"), edge.get("target")
+        if source not in by_id or target not in by_id:
+            continue
+        current, neighbor = (source, target) if direction == "downstream" else (target, source)
+        adjacency.setdefault(current, []).append(neighbor)
+    depths, queue, result = {start: 0}, [start], []
+    while queue:
+        current = queue.pop(0)
+        depth = depths[current]
+        if limit and depth >= limit:
+            continue
+        for neighbor in adjacency.get(current, []):
+            if neighbor in depths:
+                continue
+            depths[neighbor] = depth + 1
+            queue.append(neighbor)
+            node = by_id[neighbor]
+            result.append({
+                "id": neighbor, "type": node.get("type"),
+                "typeLabel": TYPE_LABEL_ZH.get(node.get("type"), node.get("type")),
+                "title": node.get("title", neighbor),
+                "artifact": node.get("artifact") or node.get("path", ""),
+                "distance": depth + 1,
+            })
+    return result
+
+def _repair_plan(node_type, missing_in=(), missing_out=(), fallback_artifact=None):
+    own_artifact = NODE_ARTIFACT.get(node_type, fallback_artifact or "traceability.json")
+    related_types = set(missing_in) | set(missing_out)
+    artifacts = [own_artifact]
+    for related in sorted(related_types):
+        candidate = NODE_ARTIFACT.get(related)
+        if candidate and candidate not in artifacts:
+            artifacts.append(candidate)
+    if "traceability.json" not in artifacts:
+        artifacts.append("traceability.json")
+    stages = [NODE_STAGE.get(node_type, "specified")]
+    stages.extend(NODE_STAGE.get(t, "specified") for t in related_types)
+    stage = max(stages, key=lambda x: LEVEL.get(x, 0))
+    if missing_in or missing_out:
+        details = []
+        if missing_in:
+            details.append("补齐上游关系：" + "、".join(TYPE_LABEL_ZH.get(x, x) for x in sorted(missing_in)))
+        if missing_out:
+            details.append("补齐下游关系：" + "、".join(TYPE_LABEL_ZH.get(x, x) for x in sorted(missing_out)))
+        action = "；".join(details) + "。检查双方需求语义、关系类型和证据后更新追溯图。"
+    else:
+        action = "检查该节点是否应纳入本次变更；若适用，补齐有效上游和下游关系；若确实不适用，应记录正式范围处置，不要删除需求来消除告警。"
+    return {"stage": stage, "artifacts": artifacts, "action": action}
+
+def build_audit_report(folder, project_root, stage):
+    """Build a machine-readable report with repair guidance and downstream impact analysis."""
+    blockers, summary = load_and_check(folder, project_root, stage)
+    graph_path = folder / "traceability.json"
+    try:
+        graph = json.loads(graph_path.read_text(encoding="utf-8-sig")) if graph_path.is_file() else {}
+    except (json.JSONDecodeError, OSError):
+        graph = {}
+    if not isinstance(graph, dict):
+        graph = {}
+    raw_nodes = graph.get("nodes", []) if isinstance(graph.get("nodes"), list) else []
+    raw_edges = graph.get("edges", []) if isinstance(graph.get("edges"), list) else []
+    by_id = {n.get("id"): n for n in raw_nodes if isinstance(n, dict) and isinstance(n.get("id"), str)}
+    issues = []
+    represented_blockers = set()
+
+    def add_issue(code, severity, state, message, node_id=None, edge_id=None,
+                  node_type=None, artifact=None, missing_in=None, missing_out=None,
+                  affected=None, recommendation=None, source=None):
+        issues.append({
+            "code": code, "severity": severity, "state": state,
+            "nodeId": node_id, "edgeId": edge_id, "nodeType": node_type,
+            "artifact": artifact or (NODE_ARTIFACT.get(node_type) if node_type else None),
+            "message": message,
+            "missingLinks": {
+                "incoming": sorted(set(missing_in or [])),
+                "outgoing": sorted(set(missing_out or [])),
+            },
+            "affectedDownstream": affected or [],
+            "recommendation": recommendation or {}, "source": source or {},
+        })
+
+    for node_id, state in sorted(summary.get("nodes", {}).items()):
+        if state not in {"broken", "orphan", "incomplete"}:
+            continue
+        node = by_id.get(node_id, {})
+        node_type = node.get("type")
+        check = summary.get("nodeChecks", {}).get(node_id, {})
+        missing_in, missing_out = check.get("missingIncoming", []), check.get("missingOutgoing", [])
+        reasons = summary.get("reasons", {}).get(node_id, [])
+        code = {"broken": "broken-node", "orphan": "orphan-node", "incomplete": "incomplete-node"}[state]
+        recommendation = _repair_plan(node_type, missing_in, missing_out, node.get("artifact"))
+        affected = _reachable_nodes(node_id, raw_nodes, raw_edges, "downstream")
+        add_issue(
+            code, "error" if state in {"broken", "orphan"} else "warning", state,
+            "；".join(reasons) or f"{node_id} needs traceability review",
+            node_id=node_id, node_type=node_type, artifact=node.get("artifact"),
+            missing_in=missing_in, missing_out=missing_out, affected=affected,
+            recommendation=recommendation,
+            source={"artifact": node.get("artifact"), "anchor": node.get("anchor", node_id)},
+        )
+        represented_blockers.add(node_id)
+
+    for missing in summary.get("missingGraphNodes", []):
+        node_id, node_type = missing.get("id"), missing.get("type")
+        add_issue(
+            "missing-graph-node", "error", "broken",
+            f"{node_id} 已在 Markdown 中声明，但没有登记到 traceability.json 的 nodes[]。",
+            node_id=node_id, node_type=node_type, artifact=missing.get("artifact"),
+            recommendation=_repair_plan(node_type, fallback_artifact=missing.get("artifact")),
+            source={"artifact": missing.get("artifact"), "anchor": missing.get("anchor", node_id)},
+        )
+        represented_blockers.add(node_id)
+
+    for extra in summary.get("unregisteredGraphNodes", []):
+        node_id, node_type = extra.get("id"), extra.get("type")
+        add_issue(
+            "unregistered-graph-node", "error", "broken",
+            f"{node_id} 存在于 JSON 图中，但在对应权威 Markdown 工件中找不到声明。",
+            node_id=node_id, node_type=node_type, artifact=extra.get("artifact"),
+            recommendation=_repair_plan(node_type, fallback_artifact=extra.get("artifact")),
+            source={"artifact": extra.get("artifact"), "anchor": node_id},
+        )
+        represented_blockers.add(node_id)
+
+    edge_issue_states = summary.get("edges", {})
+    for index, edge in enumerate(raw_edges):
+        if not isinstance(edge, dict):
+            add_issue(
+                "malformed-edge", "error", "broken", f"edges[{index}] 不是合法对象。",
+                edge_id=f"edges[{index}]", artifact="traceability.json",
+                recommendation={"stage": stage, "artifacts": ["traceability.json"], "action": "修正或删除该非法关系记录。"},
+            )
+            continue
+        edge_id = edge.get("id") or f"edges[{index}]"
+        edge_state = edge_issue_states.get(edge_id, "complete")
+        if edge_state == "complete":
+            continue
+        source_id, target_id = edge.get("source"), edge.get("target")
+        source_node, target_node = by_id.get(source_id, {}), by_id.get(target_id, {})
+        if edge_state == "broken":
+            code, severity = "broken-edge", "error"
+            message = f"关系 {edge_id} 的端点或关系定义无效：{source_id} → {target_id}。"
+        else:
+            code, severity = "incomplete-edge", "warning"
+            message = f"关系 {edge_id} 缺少证据、已阻塞/失效，或未达到当前阶段要求的确认状态。"
+        recommendation = _repair_plan(source_node.get("type") or target_node.get("type"), fallback_artifact="traceability.json")
+        recommendation["artifacts"] = list(dict.fromkeys(
+            [x for x in (source_node.get("artifact"), target_node.get("artifact"), "traceability.json") if x]
+        ))
+        impacted = _reachable_nodes(source_id, raw_nodes, raw_edges, "downstream") if source_id in by_id else []
+        add_issue(
+            code, severity, edge_state, message,
+            node_id=source_id if source_id in by_id else target_id, edge_id=edge_id,
+            node_type=source_node.get("type") or target_node.get("type"),
+            artifact="traceability.json", affected=impacted,
+            recommendation=recommendation,
+            source={"source": source_id, "target": target_id, "relationship": edge.get("type")},
+        )
+        represented_blockers.add(edge_id)
+
+    for blocker in blockers:
+        first = blocker.split(":", 1)[0].strip()
+        if first in represented_blockers:
+            continue
+        artifact = next((candidate for candidate in (
+            "source-register.md", "feature-spec.md", "feature-brief.md",
+            "system-requirements.md", "architecture.md", "software-requirements.md",
+            "tasks.md", "verification.md", "traceability.json",
+        ) if candidate in blocker), None)
+        repair_stage = {
+            "source-register.md": "specified", "feature-brief.md": "specified",
+            "feature-spec.md": "specified", "system-requirements.md": "architecture-ready",
+            "architecture.md": "architecture-ready", "software-requirements.md": "planned",
+            "tasks.md": "planned", "verification.md": "verifying",
+            "traceability.json": stage,
+        }.get(artifact, stage)
+        add_issue(
+            "artifact-review-blocker", "warning", "incomplete", blocker,
+            artifact=artifact or "change artifacts",
+            recommendation={
+                "stage": repair_stage, "artifacts": [artifact] if artifact else [],
+                "action": "打开对应工件，修复该检查项并重新运行 vsdd audit。",
+            },
+            source={"artifact": artifact},
+        )
+
+    severity_order = {"error": 0, "warning": 1, "info": 2}
+    issues.sort(key=lambda item: (
+        severity_order.get(item["severity"], 9), item.get("code", ""),
+        item.get("nodeId") or "", item.get("edgeId") or "", item.get("message", ""),
+    ))
+    for number, issue in enumerate(issues, 1):
+        issue["issueId"] = f"AUD-{number:03d}"
+
+    counts = summary.get("counts", {})
+    report_graph_nodes = [dict(node) for node in raw_nodes if isinstance(node, dict)]
+    report_node_ids = {n.get("id") for n in report_graph_nodes}
+    for missing in summary.get("missingGraphNodes", []):
+        node_id = missing.get("id")
+        if node_id and node_id not in report_node_ids:
+            report_graph_nodes.append({
+                "id": node_id, "type": missing.get("type"), "title": node_id,
+                "artifact": missing.get("artifact"), "anchor": missing.get("anchor", node_id),
+                "auditSynthetic": True,
+            })
+    report_graph = {
+        "schemaVersion": graph.get("schemaVersion", "1.0"),
+        "changeId": graph.get("changeId", folder.name),
+        "nodes": report_graph_nodes, "edges": raw_edges,
+    }
+    return {
+        "reportVersion": "1.0", "changeId": folder.name, "stage": stage,
+        "generatedAt": datetime.now(timezone.utc).replace(microsecond=0).isoformat(),
+        "result": "blocked" if blockers else "pass",
+        "summary": {
+            "totalIssues": len(issues),
+            "errors": sum(1 for issue in issues if issue["severity"] == "error"),
+            "warnings": sum(1 for issue in issues if issue["severity"] == "warning"),
+            "nodes": counts.get("nodes", 0), "edges": counts.get("edges", 0),
+            "complete": counts.get("complete", 0), "incomplete": counts.get("incomplete", 0),
+            "orphan": counts.get("orphan", 0), "broken": counts.get("broken", 0),
+            "excluded": counts.get("excluded", 0), "pending": counts.get("pending", 0),
+            "affectedDownstreamNodes": len({item["id"] for issue in issues for item in issue.get("affectedDownstream", [])}),
+        },
+        "issues": issues, "blockers": blockers, "graph": report_graph,
+    }
+
+def render_audit_markdown(report):
+    summary = report.get("summary", {})
+    lines = [
+        f"# VSDD Traceability Audit — {report.get('changeId')}", "",
+        f"- Stage: {report.get('stage')}",
+        f"- Result: **{str(report.get('result', 'unknown')).upper()}**",
+        f"- Generated: {report.get('generatedAt', '')}",
+        f"- Issues: {summary.get('totalIssues', 0)} (errors: {summary.get('errors', 0)}, warnings: {summary.get('warnings', 0)})",
+        f"- Graph: {summary.get('nodes', 0)} nodes / {summary.get('edges', 0)} edges", "", "## Findings",
+    ]
+    if not report.get("issues"):
+        lines.append("No structural or stage-gate issues were detected.")
+    for issue in report.get("issues", []):
+        location = issue.get("nodeId") or issue.get("edgeId") or issue.get("artifact") or "Project"
+        lines.extend([
+            "", f"### {issue.get('issueId')} · {issue.get('severity', '').upper()} · {issue.get('code')}",
+            f"- Object: {location}", f"- State: {issue.get('state')}",
+            f"- Finding: {issue.get('message')}",
+        ])
+        missing = issue.get("missingLinks", {})
+        if missing.get("incoming") or missing.get("outgoing"):
+            lines.append(f"- Missing incoming: {', '.join(missing.get('incoming', [])) or '—'}")
+            lines.append(f"- Missing outgoing: {', '.join(missing.get('outgoing', [])) or '—'}")
+        impact = issue.get("affectedDownstream", [])
+        if impact:
+            lines.append("- Affected downstream: " + ", ".join(x["id"] for x in impact))
+        rec = issue.get("recommendation", {})
+        if rec:
+            lines.append(f"- Repair at: {rec.get('stage', report.get('stage'))}")
+            if rec.get("artifacts"):
+                lines.append("- Artifacts: " + ", ".join(rec["artifacts"]))
+            if rec.get("action"):
+                lines.append("- Suggested action: " + rec["action"])
+    return "\n".join(lines) + "\n"
 
 def traverse_graph(graph, start_id, direction="both", max_depth=0):
     """Return edges reached from a selected node by following upstream/downstream links."""
